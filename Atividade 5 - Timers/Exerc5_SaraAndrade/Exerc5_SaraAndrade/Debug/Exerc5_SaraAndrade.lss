@@ -1,0 +1,338 @@
+
+Exerc5_SaraAndrade.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         0000000a  00800100  000001f6  0000028a  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .text         000001f6  00000000  00000000  00000094  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .bss          00000005  0080010a  0080010a  00000294  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  00000294  2**0
+                  CONTENTS, READONLY
+  4 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  000002c4  2**2
+                  CONTENTS, READONLY
+  5 .debug_aranges 00000038  00000000  00000000  00000304  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   00000745  00000000  00000000  0000033c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 00000644  00000000  00000000  00000a81  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   000002ea  00000000  00000000  000010c5  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_frame  000000a4  00000000  00000000  000013b0  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_str    000003a0  00000000  00000000  00001454  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_loc    00000102  00000000  00000000  000017f4  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_ranges 00000028  00000000  00000000  000018f6  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 34 00 	jmp	0x68	; 0x68 <__ctors_end>
+   4:	0c 94 a3 00 	jmp	0x146	; 0x146 <__vector_1>
+   8:	0c 94 b9 00 	jmp	0x172	; 0x172 <__vector_2>
+   c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  10:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  14:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  18:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  1c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  20:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  24:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  28:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  2c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  30:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  34:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  38:	0c 94 53 00 	jmp	0xa6	; 0xa6 <__vector_14>
+  3c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  40:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  44:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  48:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  4c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  50:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  54:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  58:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  5c:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  60:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+  64:	0c 94 51 00 	jmp	0xa2	; 0xa2 <__bad_interrupt>
+
+00000068 <__ctors_end>:
+  68:	11 24       	eor	r1, r1
+  6a:	1f be       	out	0x3f, r1	; 63
+  6c:	cf ef       	ldi	r28, 0xFF	; 255
+  6e:	d8 e0       	ldi	r29, 0x08	; 8
+  70:	de bf       	out	0x3e, r29	; 62
+  72:	cd bf       	out	0x3d, r28	; 61
+
+00000074 <__do_copy_data>:
+  74:	11 e0       	ldi	r17, 0x01	; 1
+  76:	a0 e0       	ldi	r26, 0x00	; 0
+  78:	b1 e0       	ldi	r27, 0x01	; 1
+  7a:	e6 ef       	ldi	r30, 0xF6	; 246
+  7c:	f1 e0       	ldi	r31, 0x01	; 1
+  7e:	02 c0       	rjmp	.+4      	; 0x84 <__do_copy_data+0x10>
+  80:	05 90       	lpm	r0, Z+
+  82:	0d 92       	st	X+, r0
+  84:	aa 30       	cpi	r26, 0x0A	; 10
+  86:	b1 07       	cpc	r27, r17
+  88:	d9 f7       	brne	.-10     	; 0x80 <__do_copy_data+0xc>
+
+0000008a <__do_clear_bss>:
+  8a:	21 e0       	ldi	r18, 0x01	; 1
+  8c:	aa e0       	ldi	r26, 0x0A	; 10
+  8e:	b1 e0       	ldi	r27, 0x01	; 1
+  90:	01 c0       	rjmp	.+2      	; 0x94 <.do_clear_bss_start>
+
+00000092 <.do_clear_bss_loop>:
+  92:	1d 92       	st	X+, r1
+
+00000094 <.do_clear_bss_start>:
+  94:	af 30       	cpi	r26, 0x0F	; 15
+  96:	b2 07       	cpc	r27, r18
+  98:	e1 f7       	brne	.-8      	; 0x92 <.do_clear_bss_loop>
+  9a:	0e 94 d9 00 	call	0x1b2	; 0x1b2 <main>
+  9e:	0c 94 f9 00 	jmp	0x1f2	; 0x1f2 <_exit>
+
+000000a2 <__bad_interrupt>:
+  a2:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+000000a6 <__vector_14>:
+int8_t unid, dezena, pausa; 
+int16_t count;
+uint8_t LUT[10] = {0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B};
+
+ISR(TIMER0_COMPA_vect) //interrupção do TC0 a cada 1ms = (64*(249+1))/16MHz
+{
+  a6:	1f 92       	push	r1
+  a8:	0f 92       	push	r0
+  aa:	0f b6       	in	r0, 0x3f	; 63
+  ac:	0f 92       	push	r0
+  ae:	11 24       	eor	r1, r1
+  b0:	2f 93       	push	r18
+  b2:	8f 93       	push	r24
+  b4:	9f 93       	push	r25
+  b6:	ef 93       	push	r30
+  b8:	ff 93       	push	r31
+	count += 1;
+  ba:	80 91 0c 01 	lds	r24, 0x010C	; 0x80010c <count>
+  be:	90 91 0d 01 	lds	r25, 0x010D	; 0x80010d <count+0x1>
+  c2:	01 96       	adiw	r24, 0x01	; 1
+	if(count == 1000)
+  c4:	88 3e       	cpi	r24, 0xE8	; 232
+  c6:	23 e0       	ldi	r18, 0x03	; 3
+  c8:	92 07       	cpc	r25, r18
+  ca:	29 f0       	breq	.+10     	; 0xd6 <__vector_14+0x30>
+int16_t count;
+uint8_t LUT[10] = {0x7E, 0x30, 0x6D, 0x79, 0x33, 0x5B, 0x5F, 0x70, 0x7F, 0x7B};
+
+ISR(TIMER0_COMPA_vect) //interrupção do TC0 a cada 1ms = (64*(249+1))/16MHz
+{
+	count += 1;
+  cc:	90 93 0d 01 	sts	0x010D, r25	; 0x80010d <count+0x1>
+  d0:	80 93 0c 01 	sts	0x010C, r24	; 0x80010c <count>
+  d4:	2e c0       	rjmp	.+92     	; 0x132 <__vector_14+0x8c>
+	if(count == 1000)
+	{
+		count = 0;		
+  d6:	10 92 0d 01 	sts	0x010D, r1	; 0x80010d <count+0x1>
+  da:	10 92 0c 01 	sts	0x010C, r1	; 0x80010c <count>
+		if(pausa != 1)
+  de:	80 91 0b 01 	lds	r24, 0x010B	; 0x80010b <pausa>
+  e2:	81 30       	cpi	r24, 0x01	; 1
+  e4:	31 f1       	breq	.+76     	; 0x132 <__vector_14+0x8c>
+		{
+			PORTC = LUT[dezena];
+  e6:	e0 91 0a 01 	lds	r30, 0x010A	; 0x80010a <__data_end>
+  ea:	0e 2e       	mov	r0, r30
+  ec:	00 0c       	add	r0, r0
+  ee:	ff 0b       	sbc	r31, r31
+  f0:	e0 50       	subi	r30, 0x00	; 0
+  f2:	ff 4f       	sbci	r31, 0xFF	; 255
+  f4:	80 81       	ld	r24, Z
+  f6:	88 b9       	out	0x08, r24	; 8
+			PORTB = LUT[unid];
+  f8:	e0 91 0e 01 	lds	r30, 0x010E	; 0x80010e <unid>
+  fc:	0e 2e       	mov	r0, r30
+  fe:	00 0c       	add	r0, r0
+ 100:	ff 0b       	sbc	r31, r31
+ 102:	e0 50       	subi	r30, 0x00	; 0
+ 104:	ff 4f       	sbci	r31, 0xFF	; 255
+ 106:	80 81       	ld	r24, Z
+ 108:	85 b9       	out	0x05, r24	; 5
+			if(unid < 9)
+ 10a:	80 91 0e 01 	lds	r24, 0x010E	; 0x80010e <unid>
+ 10e:	89 30       	cpi	r24, 0x09	; 9
+ 110:	24 f4       	brge	.+8      	; 0x11a <__vector_14+0x74>
+			{
+				unid++;
+ 112:	8f 5f       	subi	r24, 0xFF	; 255
+ 114:	80 93 0e 01 	sts	0x010E, r24	; 0x80010e <unid>
+ 118:	0c c0       	rjmp	.+24     	; 0x132 <__vector_14+0x8c>
+			}
+			else
+			{
+				unid = 0;
+ 11a:	10 92 0e 01 	sts	0x010E, r1	; 0x80010e <unid>
+				
+				if(dezena < 9)
+ 11e:	80 91 0a 01 	lds	r24, 0x010A	; 0x80010a <__data_end>
+ 122:	89 30       	cpi	r24, 0x09	; 9
+ 124:	24 f4       	brge	.+8      	; 0x12e <__vector_14+0x88>
+				{
+					dezena++;
+ 126:	8f 5f       	subi	r24, 0xFF	; 255
+ 128:	80 93 0a 01 	sts	0x010A, r24	; 0x80010a <__data_end>
+ 12c:	02 c0       	rjmp	.+4      	; 0x132 <__vector_14+0x8c>
+				}
+				else
+				{
+					dezena = 0;
+ 12e:	10 92 0a 01 	sts	0x010A, r1	; 0x80010a <__data_end>
+				}
+			}
+		}
+	}
+}
+ 132:	ff 91       	pop	r31
+ 134:	ef 91       	pop	r30
+ 136:	9f 91       	pop	r25
+ 138:	8f 91       	pop	r24
+ 13a:	2f 91       	pop	r18
+ 13c:	0f 90       	pop	r0
+ 13e:	0f be       	out	0x3f, r0	; 63
+ 140:	0f 90       	pop	r0
+ 142:	1f 90       	pop	r1
+ 144:	18 95       	reti
+
+00000146 <__vector_1>:
+
+ISR(INT0_vect) // Interrupção externa 0, captura o start/pause
+{
+ 146:	1f 92       	push	r1
+ 148:	0f 92       	push	r0
+ 14a:	0f b6       	in	r0, 0x3f	; 63
+ 14c:	0f 92       	push	r0
+ 14e:	11 24       	eor	r1, r1
+ 150:	8f 93       	push	r24
+	if(pausa == 1)
+ 152:	80 91 0b 01 	lds	r24, 0x010B	; 0x80010b <pausa>
+ 156:	81 30       	cpi	r24, 0x01	; 1
+ 158:	19 f4       	brne	.+6      	; 0x160 <__vector_1+0x1a>
+	{
+		pausa = 0;
+ 15a:	10 92 0b 01 	sts	0x010B, r1	; 0x80010b <pausa>
+ 15e:	03 c0       	rjmp	.+6      	; 0x166 <__vector_1+0x20>
+	}
+	else
+	{
+		pausa = 1;
+ 160:	81 e0       	ldi	r24, 0x01	; 1
+ 162:	80 93 0b 01 	sts	0x010B, r24	; 0x80010b <pausa>
+	}
+}
+ 166:	8f 91       	pop	r24
+ 168:	0f 90       	pop	r0
+ 16a:	0f be       	out	0x3f, r0	; 63
+ 16c:	0f 90       	pop	r0
+ 16e:	1f 90       	pop	r1
+ 170:	18 95       	reti
+
+00000172 <__vector_2>:
+
+ISR(INT1_vect) // Interrupção externa 1, captura o reset
+{
+ 172:	1f 92       	push	r1
+ 174:	0f 92       	push	r0
+ 176:	0f b6       	in	r0, 0x3f	; 63
+ 178:	0f 92       	push	r0
+ 17a:	11 24       	eor	r1, r1
+ 17c:	8f 93       	push	r24
+ 17e:	ef 93       	push	r30
+ 180:	ff 93       	push	r31
+	dezena = 0;
+ 182:	10 92 0a 01 	sts	0x010A, r1	; 0x80010a <__data_end>
+	unid = 0;
+ 186:	10 92 0e 01 	sts	0x010E, r1	; 0x80010e <unid>
+	PORTC = LUT[dezena];
+ 18a:	80 91 00 01 	lds	r24, 0x0100	; 0x800100 <__DATA_REGION_ORIGIN__>
+ 18e:	88 b9       	out	0x08, r24	; 8
+	PORTB = LUT[unid];
+ 190:	e0 91 0e 01 	lds	r30, 0x010E	; 0x80010e <unid>
+ 194:	0e 2e       	mov	r0, r30
+ 196:	00 0c       	add	r0, r0
+ 198:	ff 0b       	sbc	r31, r31
+ 19a:	e0 50       	subi	r30, 0x00	; 0
+ 19c:	ff 4f       	sbci	r31, 0xFF	; 255
+ 19e:	80 81       	ld	r24, Z
+ 1a0:	85 b9       	out	0x05, r24	; 5
+}
+ 1a2:	ff 91       	pop	r31
+ 1a4:	ef 91       	pop	r30
+ 1a6:	8f 91       	pop	r24
+ 1a8:	0f 90       	pop	r0
+ 1aa:	0f be       	out	0x3f, r0	; 63
+ 1ac:	0f 90       	pop	r0
+ 1ae:	1f 90       	pop	r1
+ 1b0:	18 95       	reti
+
+000001b2 <main>:
+
+int main(void)
+{
+	DDRD =	0x00; // Todos os pinos da porta D como entradas
+ 1b2:	1a b8       	out	0x0a, r1	; 10
+	PORTD = 0b00001100; // Habilita pull-ups dos pinos PD2 e PD3
+ 1b4:	8c e0       	ldi	r24, 0x0C	; 12
+ 1b6:	8b b9       	out	0x0b, r24	; 11
+	
+	DDRC =	0xFF; // Habilita Todos os pinos da porta C como saída
+ 1b8:	8f ef       	ldi	r24, 0xFF	; 255
+ 1ba:	87 b9       	out	0x07, r24	; 7
+	PORTC = 0x00; 
+ 1bc:	18 b8       	out	0x08, r1	; 8
+	DDRB =	0xFF; // Habilita Todos os pinos da porta B como saída
+ 1be:	84 b9       	out	0x04, r24	; 4
+	
+	//Configuração das interrupções
+	EICRA = 0b00001010;// Interrupções externas INT0 e INT1 na borda de descida
+ 1c0:	8a e0       	ldi	r24, 0x0A	; 10
+ 1c2:	80 93 69 00 	sts	0x0069, r24	; 0x800069 <__TEXT_REGION_LENGTH__+0x7f8069>
+	EIMSK = 0b00000011;// Habilita as interrupções externas INT0 e INT1
+ 1c6:	93 e0       	ldi	r25, 0x03	; 3
+ 1c8:	9d bb       	out	0x1d, r25	; 29
+	sei();// Habilita interrupções globais, ativando o bit I do SREG
+ 1ca:	78 94       	sei
+	
+	//Configuração dos Timers
+	TCCR0A = 0b00000010; // Habilita modo CTC do TC0
+ 1cc:	82 e0       	ldi	r24, 0x02	; 2
+ 1ce:	84 bd       	out	0x24, r24	; 36
+	TCCR0B = 0b00000011; // Liga TC0 com prescaler = 64
+ 1d0:	95 bd       	out	0x25, r25	; 37
+	OCR0A = 249;		 // Ajusta o comparador para o TC0 contar até 249
+ 1d2:	99 ef       	ldi	r25, 0xF9	; 249
+ 1d4:	97 bd       	out	0x27, r25	; 39
+	TIMSK0 = 0b00000010; // Habilita a interrupção na igualdade de comparação com OCR0A. A interrupção ocorre a cada 1ms = (64*(249+1))/16MHz
+ 1d6:	80 93 6e 00 	sts	0x006E, r24	; 0x80006e <__TEXT_REGION_LENGTH__+0x7f806e>
+	
+	pausa = 1;
+ 1da:	81 e0       	ldi	r24, 0x01	; 1
+ 1dc:	80 93 0b 01 	sts	0x010B, r24	; 0x80010b <pausa>
+	dezena = 0;
+ 1e0:	10 92 0a 01 	sts	0x010A, r1	; 0x80010a <__data_end>
+	unid = 0;
+ 1e4:	10 92 0e 01 	sts	0x010E, r1	; 0x80010e <unid>
+	count = 0;
+ 1e8:	10 92 0d 01 	sts	0x010D, r1	; 0x80010d <count+0x1>
+ 1ec:	10 92 0c 01 	sts	0x010C, r1	; 0x80010c <count>
+ 1f0:	ff cf       	rjmp	.-2      	; 0x1f0 <main+0x3e>
+
+000001f2 <_exit>:
+ 1f2:	f8 94       	cli
+
+000001f4 <__stop_program>:
+ 1f4:	ff cf       	rjmp	.-2      	; 0x1f4 <__stop_program>
