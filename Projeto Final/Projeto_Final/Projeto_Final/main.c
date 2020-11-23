@@ -22,12 +22,13 @@ ISR(PCINT0_vect)
 {
 	if (tarefa_atual == tarefas)
 	{
-		// Finaliza
+		// Finaliza contagem
+		atualizaDisplay('x');
 	}
 	else
 	{
 		// Salvar hrs e min na memória flash
-		atualizaDisplay(f);
+		atualizaDisplay('f');
 		tarefa_atual ++;
 		_delay_ms(1000);
 		atualizaDisplay(tarefa_atual);
@@ -185,6 +186,16 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_set_cursor(0, 40);
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
+	}
+	else if (entrada == 'x')
+	{
+		nokia_lcd_clear();
+		nokia_lcd_write_string("--------------", 1);
+		// Pegar informações da memória flash
+		nokia_lcd_set_cursor(0, 40);
+		nokia_lcd_write_string("--------------", 1);
+		nokia_lcd_render();
+		
 	}
 	else
 	{
