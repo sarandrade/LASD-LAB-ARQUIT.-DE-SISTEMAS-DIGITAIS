@@ -10,13 +10,13 @@ ISR(INT0_vect)
 {
 	if(pausa == 1)
 	{
-		atualizaDisplay('l');
-		pausa = 0;
+		atualizaDisplay('l'); // Chamada de função - Mensagem: Ligando o programa
+		pausa = 0; // Inicia o Timer
 	}
 	else
 	{
-		atualizaDisplay('d');
-		pausa = 1;
+		atualizaDisplay('d'); // Chamada de função - Mensagem: Desligando o programa
+		pausa = 1; // Pausa o Timer
 	}
 }
 
@@ -25,13 +25,13 @@ ISR(INT1_vect)
 {
 	if(pausa == 1)
 	{
-		atualizaDisplay(tarefa_atual);
-		pausa = 0;
+		atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
+		pausa = 0; // Dá play no Timer
 	}
 	else
 	{
-		atualizaDisplay('p');
-		pausa = 1;
+		atualizaDisplay('p'); // Chamada de função - Mensagem: Pausando o programa
+		pausa = 1; // Pausa o Timer
 	}
 }
 
@@ -41,39 +41,40 @@ ISR(PCINT0_vect)
 	if (tarefa_atual == tarefas)
 	{
 		// Finaliza contagem
-		atualizaDisplay('x');
+		atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
 	}
 	else
 	{
 		// Salvar hrs e min na memória flash
-		atualizaDisplay('f');
-		tarefa_atual ++;
+		atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual
+		
+		tarefa_atual ++; // Passa para a próxima tarefa
+		
 		_delay_ms(1000);
-		atualizaDisplay(tarefa_atual);
+		atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
 	}
 }	
 
 // Interrupção do TC0 a cada 1ms = (64*(249+1))/16MHz
 ISR(TIMER0_COMPA_vect)
 {
-	if (pausa != 1)
+	if (pausa != 1) // Incrementa o timer se a flag pausa for 0
 	{
-		mili ++;
+		mili ++; // Incrementa os milissegundos
 		
 		if (hrs == 0)
 		{
-			S0 = S1 = S2 = 0;
+			S0 = S1 = S2 = 0; // Seleciona a saída do DEMUX: 00
 		}
-		
 		if (mili == 1000)
 		{
 			mili = 0;
-			seg ++;
+			seg ++; // Incrementa os segundos
 			
 			if (seg == 60)
 			{
 				seg = 0;
-				min ++;
+				min ++; // Incrementa os minutos
 				
 				if (min == 5)
 				{
@@ -94,44 +95,51 @@ ISR(TIMER0_COMPA_vect)
 				else if (min ==60)
 				{
 					OCR0A = 0.98*256;
+					
 					min = 0;
-					hrs ++;
+					hrs ++; // Incrementa as horas
 					
 					if (hrs == 1)
 					{
+						// Seleciona a saída do DEMUX: 01
 						S0 = 1;
 						S1 = S2 = 0;
-						led1 = 1;
+						led1 = 1; // Aciona o primeiro LED
 					}
 					if (hrs == 2)
 					{
+						// Seleciona a saída do DEMUX: 02
 						S1 = 1;
 						S0 = S2 = 0;
-						led2 = 1;
+						led2 = 1; // Aciona o segundo LED
 					}
 					if (hrs == 3)
 					{
+						// Seleciona a saída do DEMUX: 03
 						S2 = 0;
 						S0 = S1 = 1;
-						led3 = 1;
+						led3 = 1; // Aciona o terceiro LED
 					}
 					if (hrs == 4)
 					{
+						// Seleciona a saída do DEMUX: 04
 						S2 = 1;
 						S0 = S1 = 0;
-						led4 = 1;
+						led4 = 1; // Aciona o quarto LED
 					}
 					if (hrs == 5)
 					{
+						// Seleciona a saída do DEMUX: 05
 						S1 = 0;
 						S0 = S2 = 1;
-						led5 = 1;
+						led5 = 1; // Aciona o quinto LED
 					}
 					if (hrs == 6)
 					{
+						// Seleciona a saída do DEMUX: 06
 						S0 = 0;
 						S1 = S2 = 1;
-						led6 = 1;
+						led6 = 1; // Aciona o sexto LED
 						
 						// Finalizar
 					}
@@ -145,7 +153,7 @@ ISR(TIMER0_COMPA_vect)
 ISR(USART_RX_vect)
 {
 	tarefas = UDR0; // UDR0 contém o dado recebido via USART
-	tarefa_atual = 1;
+	tarefa_atual = 1; // Inicializa as atividades pela tarefa 1
 	
 	nokia_lcd_clear();
 	nokia_lcd_write_string("--------------", 1);
@@ -159,7 +167,8 @@ ISR(USART_RX_vect)
 	nokia_lcd_write_string("--------------", 1);
 	nokia_lcd_render();
 	
-	atualizaDisplay(tarefa_atual);
+	_delay_ms(1000);
+	atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
 	
 	USART_Transmit(tarefas);
 }
@@ -169,6 +178,7 @@ int main(void)-
 	/* Initializes MCU, drivers and middleware */
 	atmel_start_init();
 	
+	// Variáveis inicializadas
 	mili = 0;
 	seg = 0;
 	min = 0;
@@ -195,7 +205,7 @@ int main(void)-
 // Função para atualização do display PCD8544-7
 void atualizaDisplay(char entrada){
 	
-	if (entrada == 'l')
+	if (entrada == 'l') // Mensagem: Ligando o programa
 	{
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
@@ -219,7 +229,7 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
 	}
-	else if (entrada == 'd')
+	else if (entrada == 'd') // Mensagem: Desligando o programa
 	{
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
@@ -234,7 +244,7 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_clear();
 		
 	}
-	else if (entrada == 'f')
+	else if (entrada == 'f') // Mensagem: Finalizando tarefa atual
 	{
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
@@ -248,7 +258,7 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
 	}
-	else if (entrada == 'p')
+	else if (entrada == 'p') // Mensagem: Pausando o programa
 	{
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
@@ -259,17 +269,14 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_render();
 		
 	}
-	else if (entrada == 'x')
+	else if (entrada == 'x') // Mensagem: Dados coletados durante as atividades
 	{
 		nokia_lcd_clear();
-		nokia_lcd_write_string("--------------", 1);
 		// Pegar informações da memória flash
-		nokia_lcd_set_cursor(0, 40);
-		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
 		
 	}
-	else
+	else // Mensagem: Atividade atual em andamento
 	{
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
