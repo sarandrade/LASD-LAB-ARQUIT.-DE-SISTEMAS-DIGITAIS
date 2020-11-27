@@ -1,9 +1,34 @@
 #include <atmel_start.h>
+#include <EEPROM.h>
+#include <string.h>
 
 // Variáveis Globais
-int8_t seg, min, hrs, pausa;
+int8_t seg, min, hrs, pausa, endereco;
 int16_t mili;
 char tarefas, tarefa_atual;
+
+// Função para escrever horas e minutos na memória EEPROM
+void writeStringToEEPROM( const String &strToWrite)
+{
+	byte len = strToWrite.length();
+	EEPROM.write(endereco, len);
+	for (int i = 0; i < len; i++)
+	{
+		EEPROM.write(endereco + 1 + i, strToWrite[i]);
+		
+	}
+	endereco += len;
+}
+
+// Função para ler horas e minutos da memória EEPROM
+int lerEEPROM(int endereco1, int endereco2)
+{
+	int valor = 0;
+	byte primeiroByte = EEPROM.read(endereco1);
+	byte segundoByte = EEPROM.read(endereco2);
+	valor = (segundoByte << 8) + primeiroByte;
+	return valor;
+}
 
 // Interrupção externa 0, captura o Ligar/Desligar
 ISR(INT0_vect)
@@ -40,12 +65,23 @@ ISR(PCINT0_vect)
 {
 	if (tarefa_atual == tarefas)
 	{
+		// Salvar hrs e min na memória flash
+		String horas = to_string(hrs);
+		String minutos = to_string(min);
+		writeStringToEEPROM (horas);
+		writeStringToEEPROM (minutos);
+		
 		// Finaliza contagem
 		atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
 	}
 	else
 	{
 		// Salvar hrs e min na memória flash
+		String horas = to_string(hrs);
+		String minutos = to_string(min);
+		writeStringToEEPROM (horas);
+		writeStringToEEPROM (minutos);
+		
 		atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual
 		
 		tarefa_atual ++; // Passa para a próxima tarefa
@@ -173,7 +209,7 @@ ISR(USART_RX_vect)
 	USART_Transmit(tarefas);
 }
 
-int main(void)-
+int main(void) //-
 {
 	/* Initializes MCU, drivers and middleware */
 	atmel_start_init();
@@ -272,6 +308,17 @@ void atualizaDisplay(char entrada){
 	else if (entrada == 'x') // Mensagem: Dados coletados durante as atividades
 	{
 		nokia_lcd_clear();
+		
+		for(int endereco_leitura = 0; endereco_leitura < endereco; endereco_leitura+=4){
+			
+			int hora = lerEEPROM(endereco_leitura, endereco_leitura+1);
+			int minutos = lerEEPROM(endereco_leitura+2, endereco_leitura+3);
+			
+			
+			//LEMBRAR DE EXIBIR DENTRO DO FOR
+			//SALVAR EM UM ARRAY SE FOR EXIBIR FORA
+		}
+		
 		// Pegar informações da memória flash
 		nokia_lcd_render();
 		
