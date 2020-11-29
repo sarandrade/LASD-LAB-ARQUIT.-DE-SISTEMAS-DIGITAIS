@@ -308,20 +308,33 @@ void atualizaDisplay(char entrada){
 	else if (entrada == 'x') // Mensagem: Dados coletados durante as atividades
 	{
 		nokia_lcd_clear();
+		nokia_lcd_write_string("Tarefa | hrs | min", 1);
+		int tarefa = 1;
+		int cursor = 20;
 		
-		for(int endereco_leitura = 0; endereco_leitura < endereco; endereco_leitura+=4){
-			
+		// Ler informações da memória EEPROM
+		for(int endereco_leitura = 0; endereco_leitura < endereco; endereco_leitura += 4)
+		{
 			int hora = lerEEPROM(endereco_leitura, endereco_leitura+1);
 			int minutos = lerEEPROM(endereco_leitura+2, endereco_leitura+3);
+			nokia_lcd_set_cursor(0, cursor);
+			nokia_lcd_write_string(tarefa, 1);
+			nokia_lcd_set_cursor(25, cursor);
+			nokia_lcd_write_string(hora, 1);
+			nokia_lcd_set_cursor(35, cursor);
+			nokia_lcd_write_string(minutos, 1);
+			nokia_lcd_render();
 			
+			_delay_ms(10000);
 			
-			//LEMBRAR DE EXIBIR DENTRO DO FOR
-			//SALVAR EM UM ARRAY SE FOR EXIBIR FORA
+			tarefa ++;
+			cursor += 10;
+			
+			if (cursor == 50)
+			{
+				cursor = 20;
+			}
 		}
-		
-		// Pegar informações da memória flash
-		nokia_lcd_render();
-		
 	}
 	else // Mensagem: Atividade atual em andamento
 	{
