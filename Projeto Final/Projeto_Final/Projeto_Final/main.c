@@ -8,9 +8,10 @@
 #define F_CPU 16000000UL // Frequência de trabalho da CPU
 #define BAUD 9600
 #define MYUBRR F_CPU/16/BAUD-1
+#define tam_vetor 2
 
 #include <avr/io.h>
-#include <EEPROM.h>
+//#include <EEPROM.h>
 #include <string.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
@@ -18,31 +19,34 @@
 
 // Variáveis Globais
 int8_t seg, min, hrs, pausa, endereco;
+int8_t pcint0_int = 0;
+int8_t count = 0;
 int16_t mili;
 char tarefas, tarefa_atual;
+char snum[tam_vetor];
 
 // Função para escrever horas e minutos na memória EEPROM
-void writeStringToEEPROM( const String &strToWrite)
-{
-	byte len = strToWrite.length();
-	EEPROM.write(endereco, len);
-	for (int i = 0; i < len; i++)
-	{
-		EEPROM.write(endereco + 1 + i, strToWrite[i]);
-		
-	}
-	endereco += len;
-}
+//void writeStringToEEPROM( const String &strToWrite)
+//{
+	//byte len = strToWrite.length();
+	//EEPROM.write(endereco, len);
+	//for (int i = 0; i < len; i++)
+	//{
+		//EEPROM.write(endereco + 1 + i, strToWrite[i]);
+		//
+	//}
+	//endereco += len;
+//}
 
 // Função para ler horas e minutos da memória EEPROM
-int lerEEPROM(int endereco1, int endereco2)
-{
-	int valor = 0;
-	byte primeiroByte = EEPROM.read(endereco1);
-	byte segundoByte = EEPROM.read(endereco2);
-	valor = (segundoByte << 8) + primeiroByte;
-	return valor;
-}
+//int lerEEPROM(int endereco1, int endereco2)
+//{
+	//int valor = 0;
+	//byte primeiroByte = EEPROM.read(endereco1);
+	//byte segundoByte = EEPROM.read(endereco2);
+	//valor = (segundoByte << 8) + primeiroByte;
+	//return valor;
+//}
 
 // Interrupção externa 0, captura o Ligar/Desligar
 ISR(INT0_vect)
@@ -77,31 +81,40 @@ ISR(INT1_vect)
 // Interrupção 0 por mudança de pino, captura o Finalizar Tarefa
 ISR(PCINT0_vect)
 {
-	if (tarefa_atual == tarefas)
+	if (pcint0_int == 0)
 	{
-		// Salvar hrs e min na memória flash
-		String horas = to_string(hrs);
-		String minutos = to_string(min);
-		writeStringToEEPROM (horas);
-		writeStringToEEPROM (minutos);
+		if (tarefa_atual == tarefas)
+		{
+			// Salvar hrs e min na memória flash
+			//String horas = to_string(hrs);
+			//String minutos = to_string(min);
+			//writeStringToEEPROM (horas);
+			//writeStringToEEPROM (minutos);
+			
+			// Finaliza contagem
+			atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
+		}
+		else
+		{
+			// Salvar hrs e min na memória flash
+			//String horas = to_string(hrs);
+			//String minutos = to_string(min);
+			//writeStringToEEPROM (horas);
+			//writeStringToEEPROM (minutos);
+			
+			atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual
+			
+			tarefa_atual ++; // Passa para a próxima tarefa
+			
+			_delay_ms(1000);
+			atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
+		}
 		
-		// Finaliza contagem
-		atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
+		pcint0_int ++;
 	}
 	else
 	{
-		// Salvar hrs e min na memória flash
-		String horas = to_string(hrs);
-		String minutos = to_string(min);
-		writeStringToEEPROM (horas);
-		writeStringToEEPROM (minutos);
-		
-		atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual
-		
-		tarefa_atual ++; // Passa para a próxima tarefa
-		
-		_delay_ms(1000);
-		atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
+		pcint0_int = 0;
 	}
 }
 
@@ -113,11 +126,11 @@ ISR(TIMER0_COMPA_vect)
 		mili ++; // Incrementa os milissegundos
 		
 		if (hrs == 0)
-		{
+		{	
 			// Seleciona a saída do DEMUX: 00
-			S0_set_level(false);
-			S1_set_level(false);
-			S2_set_level(false);
+			PORTC &= 0b0111111; // S0 = PC6 = 0
+			PORTD &= 0b11101111; // S1 = PD4 = 0
+			PORTB &= 0b10111111; // S2 = PB6 = 0
 		}
 		if (mili == 1000)
 		{
@@ -155,56 +168,56 @@ ISR(TIMER0_COMPA_vect)
 					if (hrs == 1)
 					{
 						// Seleciona a saída do DEMUX: 01
-						S0_set_level(true);
-						S1_set_level(false);
-						S2_set_level(false);
+						PORTC |= 0b1000000; // S0 = PC6 = 1
+						PORTD &= 0b11101111; // S1 = PD4 = 0
+						PORTB &= 0b10111111; // S2 = PB6 = 0
 						
-						led1_set_level(true); // Aciona o primeiro LED
+						PORTC |= 0b0000001; // Aciona o primeiro LED (PC0)
 					}
 					if (hrs == 2)
 					{
 						// Seleciona a saída do DEMUX: 02
-						S0_set_level(false);
-						S1_set_level(true);
-						S2_set_level(false);
+						PORTC &= 0b0111111; // S0 = PC6 = 0
+						PORTD |= 0b00010000;  // S1 = PD4 = 1
+						PORTB &= 0b10111111; // S2 = PB6 = 0
 						
-						led2_set_level(true); // Aciona o segundo LED
+						PORTC |= 0b0000010; // Aciona o segundo LED (PC1)								
 					}
 					if (hrs == 3)
 					{
 						// Seleciona a saída do DEMUX: 03
-						S0_set_level(true);
-						S1_set_level(false);
-						S2_set_level(true);
+						PORTC |= 0b1000000; // S0 = PC6 = 1
+						PORTD |= 0b00010000; // S1 = PD4 = 1
+						PORTB &= 0b10111111; // S2 = PB6 = 0
 						
-						led3_set_level(true); // Aciona o terceiro LED
+						PORTC |= 0b0000100; // Aciona o terceiro LED (PC2)										
 					}
 					if (hrs == 4)
 					{
 						// Seleciona a saída do DEMUX: 04
-						S0_set_level(false);
-						S1_set_level(false);
-						S2_set_level(true);
+						PORTC &= 0b0111111; // S0 = PC6 = 0
+						PORTD &= 0b11101111; // S1 = PD4 = 0
+						PORTB |= 0b01000000; // S2 = PB6 = 1
 						
-						led4_set_level(true); // Aciona o quarto LED
+						PORTC |= 0b0001000; // Aciona o quarto LED (PC3)												
 					}
 					if (hrs == 5)
 					{
 						// Seleciona a saída do DEMUX: 05
-						S0_set_level(true);
-						S1_set_level(false);
-						S2_set_level(true);
+						PORTC &= 0b0111111; // S0 = PC6 = 0
+						PORTD |= 0b00010000; // S1 = PD4 = 1
+						PORTB |= 0b01000000; // S2 = PB6 = 1
 						
-						led5_set_level(true); // Aciona o quinto LED
+						PORTC |= 0b0010000; // Aciona o quinto LED (PC4)
 					}
 					if (hrs == 6)
 					{
 						// Seleciona a saída do DEMUX: 06
-						S0_set_level(false);
-						S1_set_level(true);
-						S2_set_level(true);
+						PORTC |= 0b1000000; // S0 = PC6 = 1
+						PORTD &= 0b11101111; // S1 = PD4 = 0
+						PORTB |= 0b01000000; // S2 = PB6 = 1
 						
-						led6_set_level(true); // Aciona o sexto LED
+						PORTC |= 0b0100000; // Aciona o sexto LED (PC5)				
 						
 						// Finalizar
 					}
@@ -217,23 +230,21 @@ ISR(TIMER0_COMPA_vect)
 // Função de tratamento de interrupção – Recepção USART
 ISR(USART_RX_vect)
 {
-	tarefas = UDR0; // UDR0 contém o dado recebido via USART
+	tarefas = UDR0 - 48; // UDR0 contém o dado recebido via USART
 	tarefa_atual = 1; // Inicializa as atividades pela tarefa 1
 	
 	nokia_lcd_clear();
 	nokia_lcd_write_string("--------------", 1);
 	nokia_lcd_set_cursor(0, 10);
-	nokia_lcd_write_string("Serão realizadas", 1);
-	nokia_lcd_set_cursor(0, 20);
-	nokia_lcd_write_string(tarefas, 1);
+	nokia_lcd_write_string("   Total de", 1);
+	itoa(tarefas, snum, 10); // Funçaõ que converte tarefas (int) em string
+	nokia_lcd_set_cursor(35, 20);
+	nokia_lcd_write_string(snum, 1);
 	nokia_lcd_set_cursor(0, 30);
-	nokia_lcd_write_string("Atividades", 1);
+	nokia_lcd_write_string("   Tarefas", 1);
 	nokia_lcd_set_cursor(0, 40);
 	nokia_lcd_write_string("--------------", 1);
 	nokia_lcd_render();
-	
-	_delay_ms(1000);
-	atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
 	
 	USART_Transmit(tarefas);
 }
@@ -302,12 +313,13 @@ int main(void) //-
 	
 	nokia_lcd_init(); // Inicializa o LCD
 	nokia_lcd_clear();
-	nokia_lcd_set_cursor(0, 10);
 	nokia_lcd_write_string("--------------", 1);
+	nokia_lcd_set_cursor(0, 10);
+	nokia_lcd_write_string("Digite quantas", 1);
 	nokia_lcd_set_cursor(0, 20);
-	nokia_lcd_write_string("Quantas atividades", 1);
+	nokia_lcd_write_string(" tarefas vai", 1);
 	nokia_lcd_set_cursor(0, 30);
-	nokia_lcd_write_string("deseja realizar?", 1);
+	nokia_lcd_write_string("   realizar", 1);
 	nokia_lcd_set_cursor(0, 40);
 	nokia_lcd_write_string("--------------", 1);
 	nokia_lcd_render();
@@ -325,8 +337,8 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_set_cursor(0, 20);
-		nokia_lcd_write_string("Bem-vindo!!", 1);
-		nokia_lcd_set_cursor(0, 30);
+		nokia_lcd_write_string("  Bem-vindo!!", 1);
+		nokia_lcd_set_cursor(0, 40);
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
 		
@@ -335,11 +347,12 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_set_cursor(0, 10);
-		nokia_lcd_write_string("Atividade", 1);
-		nokia_lcd_set_cursor(0, 20);
-		nokia_lcd_write_string(tarefa_atual, 1);
+		nokia_lcd_write_string("   Tarefa", 1);
+		nokia_lcd_set_cursor(35, 20);
+		itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefa_atual (int) em string
+		nokia_lcd_write_string(snum, 1);
 		nokia_lcd_set_cursor(0, 30);
-		nokia_lcd_write_string("Em Andamento...", 1);
+		nokia_lcd_write_string(" Em Andamento", 1);
 		nokia_lcd_set_cursor(0, 40);
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
@@ -349,7 +362,7 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_set_cursor(0, 20);
-		nokia_lcd_write_string("Desligando...", 1);
+		nokia_lcd_write_string(" Desligando...", 1);
 		nokia_lcd_set_cursor(0, 40);
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
@@ -357,6 +370,7 @@ void atualizaDisplay(char entrada){
 		_delay_ms(1000);
 		
 		nokia_lcd_clear();
+		nokia_lcd_render();
 		
 	}
 	else if (entrada == 'f') // Mensagem: Finalizando tarefa atual
@@ -364,11 +378,12 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_set_cursor(0, 10);
-		nokia_lcd_write_string("Atividade", 1);
-		nokia_lcd_set_cursor(0, 20);
-		nokia_lcd_write_string(tarefa_atual, 1);
+		nokia_lcd_write_string("   Tarefa", 1);
+		nokia_lcd_set_cursor(35, 20);
+		itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefa_atual (int) em string
+		nokia_lcd_write_string(snum, 1);
 		nokia_lcd_set_cursor(0, 30);
-		nokia_lcd_write_string("Finalizada!", 1);
+		nokia_lcd_write_string("  Finalizada!", 1);
 		nokia_lcd_set_cursor(0, 40);
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
@@ -378,7 +393,7 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_set_cursor(0, 20);
-		nokia_lcd_write_string("Atividade Pausada", 1);
+		nokia_lcd_write_string("Tarefa Pausada", 1);
 		nokia_lcd_set_cursor(0, 40);
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
@@ -387,44 +402,46 @@ void atualizaDisplay(char entrada){
 	else if (entrada == 'x') // Mensagem: Dados coletados durante as atividades
 	{
 		nokia_lcd_clear();
-		nokia_lcd_write_string("Tarefa | hrs | min", 1);
+		nokia_lcd_write_string(" T | hrs | min", 1);
+		nokia_lcd_render();
 		int tarefa = 1;
 		int cursor = 20;
 		
 		// Ler informações da memória EEPROM
-		for(int endereco_leitura = 0; endereco_leitura < endereco; endereco_leitura += 4)
-		{
-			int hora = lerEEPROM(endereco_leitura, endereco_leitura+1);
-			int minutos = lerEEPROM(endereco_leitura+2, endereco_leitura+3);
-			nokia_lcd_set_cursor(0, cursor);
-			nokia_lcd_write_string(tarefa, 1);
-			nokia_lcd_set_cursor(25, cursor);
-			nokia_lcd_write_string(hora, 1);
-			nokia_lcd_set_cursor(35, cursor);
-			nokia_lcd_write_string(minutos, 1);
-			nokia_lcd_render();
-			
-			_delay_ms(10000);
-			
-			tarefa ++;
-			cursor += 10;
-			
-			if (cursor == 50)
-			{
-				cursor = 20;
-			}
-		}
+		//for(int endereco_leitura = 0; endereco_leitura < endereco; endereco_leitura += 4)
+		//{
+			//int hora = lerEEPROM(endereco_leitura, endereco_leitura+1);
+			//int minutos = lerEEPROM(endereco_leitura+2, endereco_leitura+3);
+			//nokia_lcd_set_cursor(0, cursor);
+			//nokia_lcd_write_string(tarefa, 1);
+			//nokia_lcd_set_cursor(25, cursor);
+			//nokia_lcd_write_string(hora, 1);
+			//nokia_lcd_set_cursor(35, cursor);
+			//nokia_lcd_write_string(minutos, 1);
+			//nokia_lcd_render();
+			//
+			//_delay_ms(10000);
+			//
+			//tarefa ++;
+			//cursor += 10;
+			//
+			//if (cursor == 50)
+			//{
+				//cursor = 20;
+			//}
+		//}
 	}
 	else // Mensagem: Atividade atual em andamento
 	{
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_set_cursor(0, 10);
-		nokia_lcd_write_string("Atividade", 1);
-		nokia_lcd_set_cursor(0, 20);
-		nokia_lcd_write_string(entrada, 1);
+		nokia_lcd_write_string("   Tarefa", 1);
+		nokia_lcd_set_cursor(35, 20);
+		itoa(entrada, snum, 10); // Funçaõ que converte entrada (int) em string
+		nokia_lcd_write_string(snum, 1);
 		nokia_lcd_set_cursor(0, 30);
-		nokia_lcd_write_string("Em Andamento...", 1);
+		nokia_lcd_write_string(" Em Andamento", 1);
 		nokia_lcd_set_cursor(0, 40);
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
