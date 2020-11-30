@@ -147,8 +147,8 @@ void main(void)
 	DDRD =	0b11111011; // Todos os pinos da porta D como saídas, exceto o pino PD2
 	PORTD = 0b00000100; // Habilita pull-up do pino PD2
 	
-	DDRC =	0b11111111; // Todos os pinos da porta D como saídas, exceto o pino PD2
-	PORTC = 0b00000000; // Habilita pull-up do pino PD2
+	DDRC =	0b11111111; // Todos os pinos da porta C como saídas
+	PORTC = 0b00000000;
 	
 	//Configuração das interrupções
 	EICRA = 0b00000010;// Interrupção externa INT0 na borda de descida

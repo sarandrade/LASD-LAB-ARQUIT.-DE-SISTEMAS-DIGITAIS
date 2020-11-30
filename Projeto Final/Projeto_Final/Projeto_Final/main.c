@@ -1,6 +1,20 @@
-#include <atmel_start.h>
+/*
+ * Projeto_Final.c
+ *
+ * Created: 29/11/2020 20:03:28
+ * Author : saraa
+ */ 
+
+#define F_CPU 16000000UL // Frequência de trabalho da CPU
+#define BAUD 9600
+#define MYUBRR F_CPU/16/BAUD-1
+
+#include <avr/io.h>
 #include <EEPROM.h>
 #include <string.h>
+#include <util/delay.h>
+#include <avr/interrupt.h>
+#include "nokia5110.h"
 
 // Variáveis Globais
 int8_t seg, min, hrs, pausa, endereco;
@@ -89,7 +103,7 @@ ISR(PCINT0_vect)
 		_delay_ms(1000);
 		atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
 	}
-}	
+}
 
 // Interrupção do TC0 a cada 1ms = (64*(249+1))/16MHz
 ISR(TIMER0_COMPA_vect)
@@ -100,7 +114,10 @@ ISR(TIMER0_COMPA_vect)
 		
 		if (hrs == 0)
 		{
-			S0 = S1 = S2 = 0; // Seleciona a saída do DEMUX: 00
+			// Seleciona a saída do DEMUX: 00
+			S0_set_level(false);
+			S1_set_level(false);
+			S2_set_level(false);
 		}
 		if (mili == 1000)
 		{
@@ -138,44 +155,56 @@ ISR(TIMER0_COMPA_vect)
 					if (hrs == 1)
 					{
 						// Seleciona a saída do DEMUX: 01
-						S0 = 1;
-						S1 = S2 = 0;
-						led1 = 1; // Aciona o primeiro LED
+						S0_set_level(true);
+						S1_set_level(false);
+						S2_set_level(false);
+						
+						led1_set_level(true); // Aciona o primeiro LED
 					}
 					if (hrs == 2)
 					{
 						// Seleciona a saída do DEMUX: 02
-						S1 = 1;
-						S0 = S2 = 0;
-						led2 = 1; // Aciona o segundo LED
+						S0_set_level(false);
+						S1_set_level(true);
+						S2_set_level(false);
+						
+						led2_set_level(true); // Aciona o segundo LED
 					}
 					if (hrs == 3)
 					{
 						// Seleciona a saída do DEMUX: 03
-						S2 = 0;
-						S0 = S1 = 1;
-						led3 = 1; // Aciona o terceiro LED
+						S0_set_level(true);
+						S1_set_level(false);
+						S2_set_level(true);
+						
+						led3_set_level(true); // Aciona o terceiro LED
 					}
 					if (hrs == 4)
 					{
 						// Seleciona a saída do DEMUX: 04
-						S2 = 1;
-						S0 = S1 = 0;
-						led4 = 1; // Aciona o quarto LED
+						S0_set_level(false);
+						S1_set_level(false);
+						S2_set_level(true);
+						
+						led4_set_level(true); // Aciona o quarto LED
 					}
 					if (hrs == 5)
 					{
 						// Seleciona a saída do DEMUX: 05
-						S1 = 0;
-						S0 = S2 = 1;
-						led5 = 1; // Aciona o quinto LED
+						S0_set_level(true);
+						S1_set_level(false);
+						S2_set_level(true);
+						
+						led5_set_level(true); // Aciona o quinto LED
 					}
 					if (hrs == 6)
 					{
 						// Seleciona a saída do DEMUX: 06
-						S0 = 0;
-						S1 = S2 = 1;
-						led6 = 1; // Aciona o sexto LED
+						S0_set_level(false);
+						S1_set_level(true);
+						S2_set_level(true);
+						
+						led6_set_level(true); // Aciona o sexto LED
 						
 						// Finalizar
 					}
@@ -209,10 +238,37 @@ ISR(USART_RX_vect)
 	USART_Transmit(tarefas);
 }
 
+// Função para inicialização da USART
+void USART_Init(unsigned int ubrr)
+{
+	UBRR0H = (unsigned char)(ubrr>>8); // Ajusta a taxa de transmissão
+	UBRR0L = (unsigned char)ubrr;
+	UCSR0B = (1<<RXCIE0)|(1<<RXEN0)|(1<<TXEN0); // Habilita o transmissor e o receptor
+	UCSR0C = (1<<USBS0)|(3<<UCSZ00); // Ajusta o formato do frame: 8 bits de dados e 2 de parada
+	
+	DDRC = 0xFF; // Define todos os pinos da porta C como saída
+}
+
+// Função para envio de um frame de 5 a 8 bits
+void USART_Transmit(unsigned char data)
+{
+	while(!( UCSR0A & (1<<UDRE0)));// Espera a limpeza do registr. de transmissão
+	UDR0 = data; // Coloca o dado no registrador e o envia
+}
+
+// Função para recepção de um frame de 5 a 8 bits
+unsigned char USART_Receive(void)
+{
+	while(!(UCSR0A & (1<<RXC0))); // Espera o dado ser recebido
+	return UDR0; // Lê o dado recebido e retorna
+}
+
 int main(void) //-
 {
-	/* Initializes MCU, drivers and middleware */
-	atmel_start_init();
+	DDRB = 0b11111110; // Define todos os pinos da porta B como saída (exceto B0)
+	PORTB = 0b00000001; // Habilita pull-up do pino PB0
+	DDRD = 0b11110000; // Define os pinos da porta D: D0-D3 como entradas; D4-D7 como saída
+	PORTD = 0b00001100; // Habilita pull-ups dos pinos PD2 e PD3
 	
 	// Variáveis inicializadas
 	mili = 0;
@@ -221,7 +277,30 @@ int main(void) //-
 	hrs = 0;
 	pausa = 1;
 	
-	nokia_lcd_init();
+	USART_Init(MYUBRR);
+	
+	// Fast PWM, TOP = 0xFF, OC0A habilitado
+	TCCR0A = 0b10000011; // PWM não invertido no pino OC0A
+	TCCR0B = 0b00000101; // Liga TC0, prescaler = 1024, fpwm = f0sc/(256*prescaler) = 16MHz/(256*1024) = 61Hz
+	OCR0A = 0; // Controle do ciclo ativo do PWM 0C0A
+	
+	// Configuração das Interrupções Externas
+	EICRA = 0b00001010;// Interrupções externas INT0 e INT1 na borda de descida
+	EIMSK = 0b00000011;// Habilita as interrupções externas INT0 e INT1
+	
+	// Configuração da Interrupção 0 por mudança de pino
+	PCICR = 0b00000001; // Enable pin change interrupt 0
+	PCMSK0 = 0b00000001; // Pin change enable mask 0
+	
+	// Configuração dos Timers
+	TCCR0A = 0b00000010; // Habilita modo CTC do TC0
+	TCCR0B = 0b00000011; // Liga TC0 com prescaler = 64
+	OCR0A = 249;		 // Ajusta o comparador para o TC0 contar até 249
+	TIMSK0 = 0b00000010; // Habilita a interrupção na igualdade de comparação com OCR0A. A interrupção ocorre a cada 1ms = (64*(249+1))/16MHz
+	
+	sei(); // Habilita interrupções globais, ativando o bit I do SREG
+	
+	nokia_lcd_init(); // Inicializa o LCD
 	nokia_lcd_clear();
 	nokia_lcd_set_cursor(0, 10);
 	nokia_lcd_write_string("--------------", 1);
@@ -233,7 +312,7 @@ int main(void) //-
 	nokia_lcd_write_string("--------------", 1);
 	nokia_lcd_render();
 	
-	while (1) 
+	while (1)
 	{
 	}
 }
@@ -351,3 +430,4 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_render();
 	}
 }
+
