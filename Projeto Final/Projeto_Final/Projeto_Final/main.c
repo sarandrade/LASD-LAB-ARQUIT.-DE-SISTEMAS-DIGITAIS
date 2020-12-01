@@ -11,14 +11,14 @@
 #define tam_vetor 2
 
 #include <avr/io.h>
-//#include <EEPROM.h>
+#include <avr/eeprom.h>
 #include <string.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include "nokia5110.h"
 
 // Variáveis Globais
-int8_t seg, min, hrs, pausa, endereco;
+int8_t seg, min, hrs, pausa, finaliza, endereco;
 int8_t pcint0_int = 0;
 int8_t count = 0;
 int16_t mili;
@@ -42,8 +42,8 @@ char snum[tam_vetor];
 //int lerEEPROM(int endereco1, int endereco2)
 //{
 	//int valor = 0;
-	//byte primeiroByte = EEPROM.read(endereco1);
-	//byte segundoByte = EEPROM.read(endereco2);
+	//byte primeiroByte = eeprom.read(endereco1);
+	//byte segundoByte = eeprom.read(endereco2);
 	//valor = (segundoByte << 8) + primeiroByte;
 	//return valor;
 //}
@@ -84,7 +84,7 @@ ISR(PCINT0_vect)
 	if (pcint0_int == 0)
 	{
 		if (tarefa_atual == tarefas)
-		{
+		{			
 			// Salvar hrs e min na memória flash
 			//String horas = to_string(hrs);
 			//String minutos = to_string(min);
@@ -96,6 +96,46 @@ ISR(PCINT0_vect)
 		}
 		else
 		{
+			if (tarefa_atual == 1)
+			{
+				int t1_hrs = hrs;
+				int t1_min = min;
+				
+				nokia_lcd_clear();
+				nokia_lcd_write_string(" T | hrs | min", 1);
+				nokia_lcd_set_cursor(0, 10);
+				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
+				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_set_cursor(25, 10);
+				itoa(t1_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
+				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_set_cursor(35, 10);
+				itoa(t1_min, snum, 10); // Funçaõ que converte tarefas (int) em string
+				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_render();
+				_delay_ms(5000);
+								
+			}
+			if (tarefa_atual == 2)
+			{
+				int t2_hrs = hrs;
+				int t2_min = min;
+				
+				nokia_lcd_clear();
+				nokia_lcd_write_string(" T | hrs | min", 1);
+				nokia_lcd_set_cursor(0, 10);
+				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
+				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_set_cursor(25, 10);
+				itoa(t2_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
+				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_set_cursor(35, 10);
+				itoa(t2_min, snum, 10); // Funçaõ que converte tarefas (int) em string
+				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_render();
+				_delay_ms(5000);
+				
+			}
 			// Salvar hrs e min na memória flash
 			//String horas = to_string(hrs);
 			//String minutos = to_string(min);
@@ -118,111 +158,118 @@ ISR(PCINT0_vect)
 	}
 }
 
-// Interrupção do TC0 a cada 1ms = (64*(249+1))/16MHz
-ISR(TIMER0_COMPA_vect)
+// Função que seleciona a saída do DEMUX
+void seleciona_saida_demux()
 {
-	if (pausa != 1) // Incrementa o timer se a flag pausa for 0
+	switch(hrs)
 	{
-		mili ++; // Incrementa os milissegundos
-		
-		if (hrs == 0)
-		{	
+		case 0:
 			// Seleciona a saída do DEMUX: 00
 			PORTC &= 0b0111111; // S0 = PC6 = 0
-			PORTD &= 0b11101111; // S1 = PD4 = 0
-			PORTB &= 0b10111111; // S2 = PB6 = 0
-		}
-		if (mili == 1000)
+			PORTD &= 0b11111100; // S1 = PD0 = 0 | S2 = PD1 = 0
+			break;
+		case 1:
+			// Seleciona a saída do DEMUX: 01
+			PORTC |= 0b1000000; // S0 = PC6 = 1
+			PORTD &= 0b11111100; // S1 = PD0 = 0 | S2 = PD1 = 0 
+			
+			// PORTC |= 0b0000001; // Aciona o primeiro LED (PC0)
+			break;
+		case 2:
+			// Seleciona a saída do DEMUX: 02
+			PORTC &= 0b0111111; // S0 = PC6 = 0
+			PORTD |= 0b00000001;  // S1 = PD0 = 1
+			PORTD &= 0b11111101; // S2 = PD1 = 0
+			
+			// PORTC |= 0b0000010; // Aciona o segundo LED (PC1)
+			break;
+		case 3:
+			// Seleciona a saída do DEMUX: 03
+			PORTC |= 0b1000000; // S0 = PC6 = 1
+			PORTD |= 0b00000001; // S1 = PD0 = 1
+			PORTD &= 0b11111101; // S2 = PD1 = 0
+			
+			// PORTC |= 0b0000100; // Aciona o terceiro LED (PC2)
+			break;
+		case 4:
+			// Seleciona a saída do DEMUX: 04
+			PORTC &= 0b0111111; // S0 = PC6 = 0
+			PORTD &= 0b11111110; // S1 = PD0 = 0
+			PORTD |= 0b00000010; // S2 = PD1 = 1
+			
+			// PORTC |= 0b0001000; // Aciona o quarto LED (PC3)
+			break;
+		case 5:
+			// Seleciona a saída do DEMUX: 05
+			PORTC |= 0b1000000; // S0 = PC6 = 1
+			PORTD &= 0b11111110; // S1 = PD0 = 0
+			PORTD |= 0b00000010; // S2 = PD1 = 1
+			
+			// PORTC |= 0b0010000; // Aciona o quinto LED (PC4)
+			break;
+		case 6:
+			// Seleciona a saída do DEMUX: 06
+			PORTC &= 0b0111111; // S0 = PC6 = 0
+			PORTD |= 0b00000011; // S1 = PD0 = 1 | S2 = PD1 = 1
+						
+			// PORTC |= 0b0100000; // Aciona o sexto LED (PC5)
+			finaliza = 1;
+			atualizaDisplay('x');
+			break;
+		default:
+			break;
+	}
+}
+
+// Função para definir a porcentagem do sinal PWM
+void define_porcentagem_PWM()
+{
+	switch (min) {
+		case 0:
+			OCR0A = 0.2 * 256;
+			break;
+		case 13:
+			OCR0A = 0.4 * 256;
+			break;
+		case 25:
+			OCR0A = 0.6 * 256;
+			break;
+		case 37:
+			OCR0A = 0.8 * 256;
+			break;
+		case 49:
+			OCR0A = 0.98 * 256;
+			break;
+		default:
+			break;
+	}
+}
+
+// Interrupção do TC0 a cada 1ms = (64*(249+1))/16MHz
+ISR(TIMER2_COMPA_vect)
+{
+	if (pausa != 1 && finaliza != 1) // Incrementa o timer se a flag pausa for 0
+	{
+		mili += 100; // Incrementa os milissegundos
+		
+		if (mili >= 1000)
 		{
 			mili = 0;
-			seg ++; // Incrementa os segundos
-			
-			if (seg == 60)
-			{
-				seg = 0;
-				min ++; // Incrementa os minutos
-				
-				if (min == 5)
-				{
-					OCR0A = 0.05*256;
-				}
-				else if (min == 15)
-				{
-					OCR0A = 0.25*256;
-				}
-				else if (min == 30)
-				{
-					OCR0A = 0.50*256;
-				}
-				else if (min ==45)
-				{
-					OCR0A = 0.75*256;
-				}
-				else if (min ==60)
-				{
-					OCR0A = 0.98*256;
-					
-					min = 0;
-					hrs ++; // Incrementa as horas
-					
-					if (hrs == 1)
-					{
-						// Seleciona a saída do DEMUX: 01
-						PORTC |= 0b1000000; // S0 = PC6 = 1
-						PORTD &= 0b11101111; // S1 = PD4 = 0
-						PORTB &= 0b10111111; // S2 = PB6 = 0
-						
-						PORTC |= 0b0000001; // Aciona o primeiro LED (PC0)
-					}
-					if (hrs == 2)
-					{
-						// Seleciona a saída do DEMUX: 02
-						PORTC &= 0b0111111; // S0 = PC6 = 0
-						PORTD |= 0b00010000;  // S1 = PD4 = 1
-						PORTB &= 0b10111111; // S2 = PB6 = 0
-						
-						PORTC |= 0b0000010; // Aciona o segundo LED (PC1)								
-					}
-					if (hrs == 3)
-					{
-						// Seleciona a saída do DEMUX: 03
-						PORTC |= 0b1000000; // S0 = PC6 = 1
-						PORTD |= 0b00010000; // S1 = PD4 = 1
-						PORTB &= 0b10111111; // S2 = PB6 = 0
-						
-						PORTC |= 0b0000100; // Aciona o terceiro LED (PC2)										
-					}
-					if (hrs == 4)
-					{
-						// Seleciona a saída do DEMUX: 04
-						PORTC &= 0b0111111; // S0 = PC6 = 0
-						PORTD &= 0b11101111; // S1 = PD4 = 0
-						PORTB |= 0b01000000; // S2 = PB6 = 1
-						
-						PORTC |= 0b0001000; // Aciona o quarto LED (PC3)												
-					}
-					if (hrs == 5)
-					{
-						// Seleciona a saída do DEMUX: 05
-						PORTC &= 0b0111111; // S0 = PC6 = 0
-						PORTD |= 0b00010000; // S1 = PD4 = 1
-						PORTB |= 0b01000000; // S2 = PB6 = 1
-						
-						PORTC |= 0b0010000; // Aciona o quinto LED (PC4)
-					}
-					if (hrs == 6)
-					{
-						// Seleciona a saída do DEMUX: 06
-						PORTC |= 0b1000000; // S0 = PC6 = 1
-						PORTD &= 0b11101111; // S1 = PD4 = 0
-						PORTB |= 0b01000000; // S2 = PB6 = 1
-						
-						PORTC |= 0b0100000; // Aciona o sexto LED (PC5)				
-						
-						// Finalizar
-					}
-				}
-			}
+			seg++; // Incrementa os segundos
+		}
+		if (seg >= 60)
+		{
+			seg = 0;
+			min++; // Incrementa os minutos
+			define_porcentagem_PWM();
+		}		
+		if (min >= 60)
+		{
+			min = 0;
+			hrs++; // Incrementa as horas
+			OCR0A = 0;
+			_delay_ms(10);
+			seleciona_saida_demux();
 		}
 	}
 }
@@ -278,7 +325,7 @@ int main(void) //-
 {
 	DDRB = 0b11111110; // Define todos os pinos da porta B como saída (exceto B0)
 	PORTB = 0b00000001; // Habilita pull-up do pino PB0
-	DDRD = 0b11110000; // Define os pinos da porta D: D0-D3 como entradas; D4-D7 como saída
+	DDRD = 0b11110011; // Define os pinos da porta D: D0-D3 como entradas; D4-D7 como saída
 	PORTD = 0b00001100; // Habilita pull-ups dos pinos PD2 e PD3
 	
 	// Variáveis inicializadas
@@ -287,6 +334,7 @@ int main(void) //-
 	min = 0;
 	hrs = 0;
 	pausa = 1;
+	seleciona_saida_demux();
 	
 	USART_Init(MYUBRR);
 	
@@ -304,10 +352,10 @@ int main(void) //-
 	PCMSK0 = 0b00000001; // Pin change enable mask 0
 	
 	// Configuração dos Timers
-	TCCR0A = 0b00000010; // Habilita modo CTC do TC0
-	TCCR0B = 0b00000011; // Liga TC0 com prescaler = 64
-	OCR0A = 249;		 // Ajusta o comparador para o TC0 contar até 249
-	TIMSK0 = 0b00000010; // Habilita a interrupção na igualdade de comparação com OCR0A. A interrupção ocorre a cada 1ms = (64*(249+1))/16MHz
+	TCCR2A = 0b00000010; // Habilita modo CTC do TC0
+	TCCR2B = 0b00000011; // Liga TC0 com prescaler = 64
+	OCR2A = 249;		 // Ajusta o comparador para o TC0 contar até 249
+	TIMSK2 = 0b00000010; // Habilita a interrupção na igualdade de comparação com OCR0A. A interrupção ocorre a cada 1ms = (64*(249+1))/16MHz
 	
 	sei(); // Habilita interrupções globais, ativando o bit I do SREG
 	
