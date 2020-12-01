@@ -18,7 +18,7 @@
 #include "nokia5110.h"
 
 // Variáveis Globais
-int8_t seg, min, hrs, pausa, finaliza, endereco;
+int8_t seg, min, hrs, pausa, finaliza, liga, endereco;
 int8_t pcint0_int = 0;
 int8_t count = 0;
 int16_t mili;
@@ -51,37 +51,53 @@ char snum[tam_vetor];
 // Interrupção externa 0, captura o Ligar/Desligar
 ISR(INT0_vect)
 {
-	if(pausa == 1)
+	if (liga == 1)
 	{
 		atualizaDisplay('l'); // Chamada de função - Mensagem: Ligando o programa
-		pausa = 0; // Inicia o Timer
+		liga = 0; // Inicia o Timer
+		
+		if(finaliza == 0 && pausa == 0)
+		{
+			atualizaDisplay(tarefa_atual);
+		}
+		else if (finaliza == 1)
+		{
+			atualizaDisplay('x');
+		}
+		else if (pausa == 1)
+		{
+			atualizaDisplay('p');
+		}
 	}
 	else
 	{
 		atualizaDisplay('d'); // Chamada de função - Mensagem: Desligando o programa
-		pausa = 1; // Pausa o Timer
+		liga = 1; // Pausa o Timer
 	}
 }
 
 // Interrupção externa 1, captura o Play/Pause
 ISR(INT1_vect)
 {
-	if(pausa == 1)
+	if (finaliza == 0 && liga == 0)
 	{
-		atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
-		pausa = 0; // Dá play no Timer
-	}
-	else
-	{
-		atualizaDisplay('p'); // Chamada de função - Mensagem: Pausando o programa
-		pausa = 1; // Pausa o Timer
+		if(pausa == 1)
+		{
+			atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
+			pausa = 0; // Dá play no Timer
+		}
+		else
+		{
+			atualizaDisplay('p'); // Chamada de função - Mensagem: Pausando o programa
+			pausa = 1; // Pausa o Timer
+		}
 	}
 }
 
 // Interrupção 0 por mudança de pino, captura o Finalizar Tarefa
 ISR(PCINT0_vect)
 {
-	if (pcint0_int == 0)
+	if (pcint0_int == 0 && pausa == 0 && liga == 0)
 	{
 		if (tarefa_atual == tarefas)
 		{			
@@ -92,7 +108,9 @@ ISR(PCINT0_vect)
 			//writeStringToEEPROM (minutos);
 			
 			// Finaliza contagem
+			atualizaDisplay('f');
 			atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
+			finaliza = 1;
 		}
 		else
 		{
@@ -146,13 +164,12 @@ ISR(PCINT0_vect)
 			
 			tarefa_atual ++; // Passa para a próxima tarefa
 			
-			_delay_ms(1000);
 			atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
 		}
 		
 		pcint0_int ++;
 	}
-	else
+	else if (pcint0_int == 1)
 	{
 		pcint0_int = 0;
 	}
@@ -248,7 +265,7 @@ void define_porcentagem_PWM()
 // Interrupção do TC0 a cada 1ms = (64*(249+1))/16MHz
 ISR(TIMER2_COMPA_vect)
 {
-	if (pausa != 1 && finaliza != 1) // Incrementa o timer se a flag pausa for 0
+	if (pausa != 1 && finaliza != 1 && liga != 1) // Incrementa o timer se as flags: pausa = 0; finaliza = 0; e liga = 0;
 	{
 		mili += 100; // Incrementa os milissegundos
 		
@@ -333,7 +350,9 @@ int main(void) //-
 	seg = 0;
 	min = 0;
 	hrs = 0;
-	pausa = 1;
+	liga = 1;
+	pausa = 0;
+	finaliza = 0;
 	seleciona_saida_demux();
 	
 	USART_Init(MYUBRR);
@@ -391,19 +410,6 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_render();
 		
 		_delay_ms(1000);
-		
-		nokia_lcd_clear();
-		nokia_lcd_write_string("--------------", 1);
-		nokia_lcd_set_cursor(0, 10);
-		nokia_lcd_write_string("   Tarefa", 1);
-		nokia_lcd_set_cursor(35, 20);
-		itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefa_atual (int) em string
-		nokia_lcd_write_string(snum, 1);
-		nokia_lcd_set_cursor(0, 30);
-		nokia_lcd_write_string(" Em Andamento", 1);
-		nokia_lcd_set_cursor(0, 40);
-		nokia_lcd_write_string("--------------", 1);
-		nokia_lcd_render();
 	}
 	else if (entrada == 'd') // Mensagem: Desligando o programa
 	{
@@ -435,6 +441,8 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_set_cursor(0, 40);
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
+		
+		_delay_ms(1000);
 	}
 	else if (entrada == 'p') // Mensagem: Pausando o programa
 	{
