@@ -69,15 +69,6 @@ Ground-5:
 Node-4: 
 <item labely="-24" valLabelx="0" labelx="-16" vflip="1" x="-300" objectName="Node-4" id="Node-111" valLabRot="0" valLabely="0" y="-52" hflip="1" Show_id="false" labelrot="0" rotation="0" itemtype="Node"/>
  
-Probe-3: 
-<item labely="-16" valLabelx="16" labelx="16" vflip="1" x="-324" objectName="Probe-3" id="Probe-113" valLabRot="45" PlotterCh="0" valLabely="0" y="-300" hflip="1" Show_id="false" labelrot="45" rotation="-135" Show_volt="true" itemtype="Probe"/>
- 
-Probe-2: 
-<item labely="-16" valLabelx="16" labelx="16" vflip="1" x="-276" objectName="Probe-2" id="Probe-114" valLabRot="45" PlotterCh="0" valLabely="0" y="-212" hflip="1" Show_id="false" labelrot="45" rotation="-45" Show_volt="true" itemtype="Probe"/>
- 
-Probe-1: 
-<item labely="-16" valLabelx="16" labelx="16" vflip="1" x="-284" objectName="Probe-1" id="Probe-115" valLabRot="45" PlotterCh="0" valLabely="0" y="-260" hflip="1" Show_id="false" labelrot="45" rotation="-45" Show_volt="true" itemtype="Probe"/>
- 
 Connector-33: 
 <item startpinid="Push-11-rnod" enodeid="Circ_eNode-34" labelx="-16" objectName="Connector-33" pointList="-364,-92,-340,-92,-340,-108,-292,-108" x="-364" valLabRot="0" y="-92" Show_id="false" rotation="0" itemtype="Connector" valLabely="0" labely="-24" labelrot="0" vflip="1" valLabelx="0" hflip="1" id="Connector-11" endpinid="atmega328-7-PD3"/>
  

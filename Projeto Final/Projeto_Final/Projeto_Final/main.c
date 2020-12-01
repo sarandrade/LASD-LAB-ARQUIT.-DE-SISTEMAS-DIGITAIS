@@ -2,7 +2,7 @@
  * Projeto_Final.c
  *
  * Created: 29/11/2020 20:03:28
- * Author : saraa
+ * Author : Sara e Saulo
  */ 
 
 #define F_CPU 16000000UL // Frequência de trabalho da CPU
@@ -58,15 +58,15 @@ ISR(INT0_vect)
 		
 		if(finaliza == 0 && pausa == 0)
 		{
-			atualizaDisplay(tarefa_atual);
+			atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
 		}
 		else if (finaliza == 1)
 		{
-			atualizaDisplay('x');
+			atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
 		}
 		else if (pausa == 1)
 		{
-			atualizaDisplay('p');
+			atualizaDisplay('p'); // Chamada de função - Mensagem: Pausando o programa
 		}
 	}
 	else
@@ -99,18 +99,19 @@ ISR(PCINT0_vect)
 {
 	if (pcint0_int == 0 && pausa == 0 && liga == 0)
 	{
-		if (tarefa_atual == tarefas)
+		pcint0_int ++;
+		
+		if (tarefa_atual == tarefas) // Não há mais tarefas para realizar
 		{			
 			// Salvar hrs e min na memória flash
-			//String horas = to_string(hrs);
-			//String minutos = to_string(min);
-			//writeStringToEEPROM (horas);
-			//writeStringToEEPROM (minutos);
+			// String horas = to_string(hrs);
+			// String minutos = to_string(min);
+			// writeStringToEEPROM (horas);
+			// writeStringToEEPROM (minutos);
 			
-			// Finaliza contagem
-			atualizaDisplay('f');
+			atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual
 			atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
-			finaliza = 1;
+			finaliza = 1; // Finaliza contagem do Timer
 		}
 		else
 		{
@@ -155,110 +156,19 @@ ISR(PCINT0_vect)
 				
 			}
 			// Salvar hrs e min na memória flash
-			//String horas = to_string(hrs);
-			//String minutos = to_string(min);
-			//writeStringToEEPROM (horas);
-			//writeStringToEEPROM (minutos);
+			// String horas = to_string(hrs);
+			// String minutos = to_string(min);
+			// writeStringToEEPROM (horas);
+			// writeStringToEEPROM (minutos);
 			
 			atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual
-			
 			tarefa_atual ++; // Passa para a próxima tarefa
-			
 			atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
 		}
-		
-		pcint0_int ++;
 	}
 	else if (pcint0_int == 1)
 	{
 		pcint0_int = 0;
-	}
-}
-
-// Função que seleciona a saída do DEMUX
-void seleciona_saida_demux()
-{
-	switch(hrs)
-	{
-		case 0:
-			// Seleciona a saída do DEMUX: 00
-			PORTC &= 0b0111111; // S0 = PC6 = 0
-			PORTD &= 0b11111100; // S1 = PD0 = 0 | S2 = PD1 = 0
-			break;
-		case 1:
-			// Seleciona a saída do DEMUX: 01
-			PORTC |= 0b1000000; // S0 = PC6 = 1
-			PORTD &= 0b11111100; // S1 = PD0 = 0 | S2 = PD1 = 0 
-			
-			// PORTC |= 0b0000001; // Aciona o primeiro LED (PC0)
-			break;
-		case 2:
-			// Seleciona a saída do DEMUX: 02
-			PORTC &= 0b0111111; // S0 = PC6 = 0
-			PORTD |= 0b00000001;  // S1 = PD0 = 1
-			PORTD &= 0b11111101; // S2 = PD1 = 0
-			
-			// PORTC |= 0b0000010; // Aciona o segundo LED (PC1)
-			break;
-		case 3:
-			// Seleciona a saída do DEMUX: 03
-			PORTC |= 0b1000000; // S0 = PC6 = 1
-			PORTD |= 0b00000001; // S1 = PD0 = 1
-			PORTD &= 0b11111101; // S2 = PD1 = 0
-			
-			// PORTC |= 0b0000100; // Aciona o terceiro LED (PC2)
-			break;
-		case 4:
-			// Seleciona a saída do DEMUX: 04
-			PORTC &= 0b0111111; // S0 = PC6 = 0
-			PORTD &= 0b11111110; // S1 = PD0 = 0
-			PORTD |= 0b00000010; // S2 = PD1 = 1
-			
-			// PORTC |= 0b0001000; // Aciona o quarto LED (PC3)
-			break;
-		case 5:
-			// Seleciona a saída do DEMUX: 05
-			PORTC |= 0b1000000; // S0 = PC6 = 1
-			PORTD &= 0b11111110; // S1 = PD0 = 0
-			PORTD |= 0b00000010; // S2 = PD1 = 1
-			
-			// PORTC |= 0b0010000; // Aciona o quinto LED (PC4)
-			break;
-		case 6:
-			// Seleciona a saída do DEMUX: 06
-			PORTC &= 0b0111111; // S0 = PC6 = 0
-			PORTD |= 0b00000011; // S1 = PD0 = 1 | S2 = PD1 = 1
-						
-			// PORTC |= 0b0100000; // Aciona o sexto LED (PC5)
-			finaliza = 1;
-			atualizaDisplay('x');
-			break;
-		default:
-			break;
-	}
-}
-
-// Função para definir a porcentagem do sinal PWM
-void define_porcentagem_PWM()
-{
-	switch (min) {
-		case 0:
-			OCR0A = 0.2 * 256;
-			break;
-		case 13:
-			OCR0A = 0.4 * 256;
-			break;
-		case 25:
-			OCR0A = 0.6 * 256;
-			break;
-		case 37:
-			OCR0A = 0.8 * 256;
-			break;
-		case 49:
-			OCR0A = 0.98 * 256;
-			break;
-		default:
-			break;
 	}
 }
 
@@ -267,7 +177,7 @@ ISR(TIMER2_COMPA_vect)
 {
 	if (pausa != 1 && finaliza != 1 && liga != 1) // Incrementa o timer se as flags: pausa = 0; finaliza = 0; e liga = 0;
 	{
-		mili += 100; // Incrementa os milissegundos
+		mili++; // Incrementa os milissegundos
 		
 		if (mili >= 1000)
 		{
@@ -278,15 +188,16 @@ ISR(TIMER2_COMPA_vect)
 		{
 			seg = 0;
 			min++; // Incrementa os minutos
-			define_porcentagem_PWM();
+			define_porcentagem_PWM(); // Chamada para função que define a porcentagem do sinal PWM
 		}		
 		if (min >= 60)
 		{
 			min = 0;
 			hrs++; // Incrementa as horas
-			OCR0A = 0;
+			
+			OCR0A = 0; // Reseta PWM
 			_delay_ms(10);
-			seleciona_saida_demux();
+			seleciona_saida_demux(); // Chamada para função que seleciona a saída do DEMUX
 		}
 	}
 }
@@ -310,7 +221,95 @@ ISR(USART_RX_vect)
 	nokia_lcd_write_string("--------------", 1);
 	nokia_lcd_render();
 	
-	USART_Transmit(tarefas);
+	USART_Transmit(tarefas); // Chamada para função de envio de um frame de 5 a 8 bits
+}
+
+// Função que seleciona a saída do DEMUX
+void seleciona_saida_demux()
+{
+	switch(hrs)
+	{
+		case 0:
+			// Seleciona a saída do DEMUX: 00
+			PORTC &= 0b0111111; // S0 = PC6 = 0
+			PORTD &= 0b11111100; // S1 = PD0 = 0 | S2 = PD1 = 0
+			break;
+		case 1:
+			// Seleciona a saída do DEMUX: 01
+			PORTC |= 0b1000000; // S0 = PC6 = 1
+			PORTD &= 0b11111100; // S1 = PD0 = 0 | S2 = PD1 = 0
+		
+			// PORTC |= 0b0000001; // Aciona o primeiro LED (PC0)
+			break;
+		case 2:
+			// Seleciona a saída do DEMUX: 02
+			PORTC &= 0b0111111; // S0 = PC6 = 0
+			PORTD |= 0b00000001;  // S1 = PD0 = 1
+			PORTD &= 0b11111101; // S2 = PD1 = 0
+		
+			// PORTC |= 0b0000010; // Aciona o segundo LED (PC1)
+			break;
+		case 3:
+			// Seleciona a saída do DEMUX: 03
+			PORTC |= 0b1000000; // S0 = PC6 = 1
+			PORTD |= 0b00000001; // S1 = PD0 = 1
+			PORTD &= 0b11111101; // S2 = PD1 = 0
+		
+			// PORTC |= 0b0000100; // Aciona o terceiro LED (PC2)
+			break;
+		case 4:
+			// Seleciona a saída do DEMUX: 04
+			PORTC &= 0b0111111; // S0 = PC6 = 0
+			PORTD &= 0b11111110; // S1 = PD0 = 0
+			PORTD |= 0b00000010; // S2 = PD1 = 1
+		
+			// PORTC |= 0b0001000; // Aciona o quarto LED (PC3)
+			break;
+		case 5:
+			// Seleciona a saída do DEMUX: 05
+			PORTC |= 0b1000000; // S0 = PC6 = 1
+			PORTD &= 0b11111110; // S1 = PD0 = 0
+			PORTD |= 0b00000010; // S2 = PD1 = 1
+		
+			// PORTC |= 0b0010000; // Aciona o quinto LED (PC4)
+			break;
+		case 6:
+			// Seleciona a saída do DEMUX: 06
+			PORTC &= 0b0111111; // S0 = PC6 = 0
+			PORTD |= 0b00000011; // S1 = PD0 = 1 | S2 = PD1 = 1
+		
+			// PORTC |= 0b0100000; // Aciona o sexto LED (PC5)
+		
+			finaliza = 1; // Finaliza contagem do Timer
+			atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
+			break;
+		default:
+			break;
+	}
+}
+
+// Função que define a porcentagem do sinal PWM
+void define_porcentagem_PWM()
+{
+	switch (min) {
+		case 0:
+			OCR0A = 0.2 * 256; // Define PWM em 20%
+			break;
+		case 13:
+			OCR0A = 0.4 * 256; // Define PWM em 40%
+			break;
+		case 25:
+			OCR0A = 0.6 * 256; // Define PWM em 60%
+			break;
+		case 37:
+			OCR0A = 0.8 * 256; // Define PWM em 80%
+			break;
+		case 49:
+			OCR0A = 0.98 * 256; // Define PWM em 98%
+			break;
+		default:
+			break;
+	}
 }
 
 // Função para inicialização da USART
@@ -338,7 +337,7 @@ unsigned char USART_Receive(void)
 	return UDR0; // Lê o dado recebido e retorna
 }
 
-int main(void) //-
+int main(void)
 {
 	DDRB = 0b11111110; // Define todos os pinos da porta B como saída (exceto B0)
 	PORTB = 0b00000001; // Habilita pull-up do pino PB0
@@ -353,9 +352,9 @@ int main(void) //-
 	liga = 1;
 	pausa = 0;
 	finaliza = 0;
-	seleciona_saida_demux();
+	seleciona_saida_demux(); // Chamada para função que seleciona a saída do DEMUX
 	
-	USART_Init(MYUBRR);
+	USART_Init(MYUBRR); // Chamada para função que inicializa a USART
 	
 	// Fast PWM, TOP = 0xFF, OC0A habilitado
 	TCCR0A = 0b10000011; // PWM não invertido no pino OC0A
@@ -370,6 +369,7 @@ int main(void) //-
 	PCICR = 0b00000001; // Enable pin change interrupt 0
 	PCMSK0 = 0b00000001; // Pin change enable mask 0
 	
+	// ** Conferir comentários do Timer **
 	// Configuração dos Timers
 	TCCR2A = 0b00000010; // Habilita modo CTC do TC0
 	TCCR2B = 0b00000011; // Liga TC0 com prescaler = 64
@@ -379,9 +379,9 @@ int main(void) //-
 	sei(); // Habilita interrupções globais, ativando o bit I do SREG
 	
 	nokia_lcd_init(); // Inicializa o LCD
-	nokia_lcd_clear();
-	nokia_lcd_write_string("--------------", 1);
-	nokia_lcd_set_cursor(0, 10);
+	nokia_lcd_clear();  // Limpa o display
+	nokia_lcd_write_string("--------------", 1);  // Informação que será exibida no display e tamanho da fonte
+	nokia_lcd_set_cursor(0, 10); // Move o cursor
 	nokia_lcd_write_string("Digite quantas", 1);
 	nokia_lcd_set_cursor(0, 20);
 	nokia_lcd_write_string(" tarefas vai", 1);
@@ -389,7 +389,7 @@ int main(void) //-
 	nokia_lcd_write_string("   realizar", 1);
 	nokia_lcd_set_cursor(0, 40);
 	nokia_lcd_write_string("--------------", 1);
-	nokia_lcd_render();
+	nokia_lcd_render(); // Exibe as informações apresentadas acima no display
 	
 	while (1)
 	{
@@ -434,7 +434,7 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_set_cursor(0, 10);
 		nokia_lcd_write_string("   Tarefa", 1);
 		nokia_lcd_set_cursor(35, 20);
-		itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefa_atual (int) em string
+		itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefa_atual (int) em string (snum)
 		nokia_lcd_write_string(snum, 1);
 		nokia_lcd_set_cursor(0, 30);
 		nokia_lcd_write_string("  Finalizada!", 1);
@@ -460,9 +460,9 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_clear();
 		nokia_lcd_write_string(" T | hrs | min", 1);
 		nokia_lcd_render();
-		int tarefa = 1;
-		int cursor = 20;
 		
+		//int tarefa = 1;
+		//int cursor = 20;
 		// Ler informações da memória EEPROM
 		//for(int endereco_leitura = 0; endereco_leitura < endereco; endereco_leitura += 4)
 		//{
@@ -494,7 +494,7 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_set_cursor(0, 10);
 		nokia_lcd_write_string("   Tarefa", 1);
 		nokia_lcd_set_cursor(35, 20);
-		itoa(entrada, snum, 10); // Funçaõ que converte entrada (int) em string
+		itoa(entrada, snum, 10); // Funçaõ que converte entrada (int) em string (snum)
 		nokia_lcd_write_string(snum, 1);
 		nokia_lcd_set_cursor(0, 30);
 		nokia_lcd_write_string(" Em Andamento", 1);
@@ -503,4 +503,3 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_render();
 	}
 }
-
