@@ -18,35 +18,16 @@
 #include "nokia5110.h"
 
 // Variáveis Globais
-int8_t seg, min, hrs, pausa, finaliza, liga, endereco;
+int8_t seg, min, hrs, pausa, finaliza, liga;
 int8_t pcint0_int = 0;
 int8_t count = 0;
 int16_t mili;
 char tarefas, tarefa_atual;
 char snum[tam_vetor];
-
-// Função para escrever horas e minutos na memória EEPROM
-//void writeStringToEEPROM( const String &strToWrite)
-//{
-	//byte len = strToWrite.length();
-	//EEPROM.write(endereco, len);
-	//for (int i = 0; i < len; i++)
-	//{
-		//EEPROM.write(endereco + 1 + i, strToWrite[i]);
-		//
-	//}
-	//endereco += len;
-//}
-
-// Função para ler horas e minutos da memória EEPROM
-//int lerEEPROM(int endereco1, int endereco2)
-//{
-	//int valor = 0;
-	//byte primeiroByte = eeprom.read(endereco1);
-	//byte segundoByte = eeprom.read(endereco2);
-	//valor = (segundoByte << 8) + primeiroByte;
-	//return valor;
-//}
+int8_t vetor_hrs[100];
+int8_t vetor_min[100];
+int8_t contador_hrs = 0;
+int8_t contador_min = 0;
 
 // Interrupção externa 0, captura o Ligar/Desligar
 ISR(INT0_vect)
@@ -103,11 +84,15 @@ ISR(PCINT0_vect)
 		
 		if (tarefa_atual == tarefas) // Não há mais tarefas para realizar
 		{			
-			// Salvar hrs e min na memória flash
-			// String horas = to_string(hrs);
-			// String minutos = to_string(min);
-			// writeStringToEEPROM (horas);
-			// writeStringToEEPROM (minutos);
+			// Salvar hrs e min nos arrays
+			vetor_hrs[contador_hrs] = hrs;
+			vetor_min[contador_min] = min;
+			
+			// Salvar os arrays na EEPROM
+			for (int endereco = 0; endereco <= contador_hrs; endereco += 2){
+				_EEPUT(endereco, vetor_hrs[endereco]);
+				_EEPUT(endereco + 1, vetor_min[endereco]);
+			}
 			
 			atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual
 			atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
@@ -155,12 +140,13 @@ ISR(PCINT0_vect)
 				_delay_ms(5000);
 				
 			}
-			// Salvar hrs e min na memória flash
-			// String horas = to_string(hrs);
-			// String minutos = to_string(min);
-			// writeStringToEEPROM (horas);
-			// writeStringToEEPROM (minutos);
 			
+			// Salvar hrs e min no array
+			vetor_hrs[contador_hrs] = hrs;
+			contador_hrs++;
+			vetor_min[contador_min] = min;
+			contador_min++;
+						
 			atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual
 			tarefa_atual ++; // Passa para a próxima tarefa
 			atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
@@ -279,7 +265,13 @@ void seleciona_saida_demux()
 			PORTD |= 0b00000011; // S1 = PD0 = 1 | S2 = PD1 = 1
 		
 			// PORTC |= 0b0100000; // Aciona o sexto LED (PC5)
-		
+			
+			// Salvar os arrays na EEPROM
+			for (int endereco = 0; endereco <= contador_hrs; endereco += 2){
+				_EEPUT(endereco, vetor_hrs[endereco]);
+				_EEPUT(endereco + 1, vetor_min[endereco]);
+			}
+			
 			finaliza = 1; // Finaliza contagem do Timer
 			atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
 			break;
@@ -461,31 +453,35 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_write_string(" T | hrs | min", 1);
 		nokia_lcd_render();
 		
-		//int tarefa = 1;
-		//int cursor = 20;
+		int tarefa = 1;
+		int cursor = 20;
+		int leitura_hrs[100];
+		int leitura_min[100];
+		
 		// Ler informações da memória EEPROM
-		//for(int endereco_leitura = 0; endereco_leitura < endereco; endereco_leitura += 4)
-		//{
-			//int hora = lerEEPROM(endereco_leitura, endereco_leitura+1);
-			//int minutos = lerEEPROM(endereco_leitura+2, endereco_leitura+3);
-			//nokia_lcd_set_cursor(0, cursor);
-			//nokia_lcd_write_string(tarefa, 1);
-			//nokia_lcd_set_cursor(25, cursor);
-			//nokia_lcd_write_string(hora, 1);
-			//nokia_lcd_set_cursor(35, cursor);
-			//nokia_lcd_write_string(minutos, 1);
-			//nokia_lcd_render();
-			//
-			//_delay_ms(10000);
-			//
-			//tarefa ++;
-			//cursor += 10;
-			//
-			//if (cursor == 50)
-			//{
-				//cursor = 20;
-			//}
-		//}
+		for (int endereco = 0; endereco <= contador_hrs; endereco += 2){
+			leitura_hrs = _EEGET(endereco);
+			leitura_min = _EEGET(endereco + 1);
+		}
+		
+		nokia_lcd_set_cursor(0, cursor);
+		nokia_lcd_write_string(tarefa, 1);
+		nokia_lcd_set_cursor(25, cursor);
+		nokia_lcd_write_string(hora, 1);
+		nokia_lcd_set_cursor(35, cursor);
+		nokia_lcd_write_string(minutos, 1);
+		nokia_lcd_render();
+		
+		_delay_ms(10000);
+		
+		tarefa++;
+		cursor += 10;
+		
+		if (cursor == 50)
+		{
+			cursor = 20;
+		}
+	}
 	}
 	else // Mensagem: Atividade atual em andamento
 	{
