@@ -13,6 +13,7 @@
 #include <avr/io.h>
 #include <avr/eeprom.h>
 #include <string.h>
+#include <assert.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include "nokia5110.h"
@@ -28,6 +29,9 @@ int8_t vetor_hrs[100];
 int8_t vetor_min[100];
 int8_t vetor_porcentagem[100];
 int8_t contador_tarefa = 0;
+
+
+// ** Módulo Interrupções ** //
 
 // Interrupção externa 0, captura o Ligar/Desligar
 ISR(INT0_vect)
@@ -88,29 +92,29 @@ ISR(PCINT0_vect)
 			{
 				int t4_hrs = hrs;
 				int t4_min = min;
+				int t4_porcen = 25;
 				
 				nokia_lcd_clear();
-				nokia_lcd_write_string("T | H | M | P", 1);
+				nokia_lcd_write_string("T | h:min | %", 1);
 				nokia_lcd_set_cursor(0, 10);
 				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
 				nokia_lcd_write_string(snum, 1);
 				nokia_lcd_set_cursor(24, 10);
 				itoa(t4_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
 				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(45, 10);
-				itoa(t4_min, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_set_cursor(30, 10);
+				nokia_lcd_write_string(":", 1);
+				nokia_lcd_set_cursor(34, 10);
+				exibe_com_2digitos(t4_min);
 				nokia_lcd_set_cursor(69, 10);
-				nokia_lcd_write_string("50", 1);
+				exibe_com_2digitos(t4_porcen);
 				nokia_lcd_render();
-				_delay_ms(5000);
+				_delay_ms(4000);
 				
 			}
 					
-			// Salvar hrs e min da tarefa atual nos arrays vetor_hrs[] e vetor_min[]
-			vetor_hrs[contador_tarefa] = hrs - vetor_hrs[contador_tarefa - 1];
-			vetor_min[contador_tarefa] = min - vetor_min[contador_tarefa - 1];
-			calcula_porcentagem();
+			calcula_tempo_da_tarefa(); // Chamada da função que calcula o tempo em que cada tarefa foi realizada
+			calcula_porcentagem(); // Chamada da função que calcula a porcentagem do tempo total gasto em cada tarefa
 			
 			int contador = 0; // Contador dos vetores vetor_hrs[] e vetor_min[]
 			
@@ -132,66 +136,72 @@ ISR(PCINT0_vect)
 			{
 				int t1_hrs = hrs;
 				int t1_min = min;
+				int t1_porcen = 5;				
 				
 				nokia_lcd_clear();
-				nokia_lcd_write_string("T | H | M | P", 1);
+				nokia_lcd_write_string("T | h:min | %", 1);
 				nokia_lcd_set_cursor(0, 10);
 				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
 				nokia_lcd_write_string(snum, 1);
 				nokia_lcd_set_cursor(24, 10);
 				itoa(t1_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
 				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(45, 10);
-				itoa(t1_min, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_set_cursor(30, 10);
+				nokia_lcd_write_string(":", 1);
+				nokia_lcd_set_cursor(34, 10);
+				exibe_com_2digitos(t1_min);
 				nokia_lcd_set_cursor(69, 10);
-				nokia_lcd_write_string("17", 1);
+				exibe_com_2digitos(t1_porcen);
 				nokia_lcd_render();
-				_delay_ms(5000);
+				_delay_ms(4000);
 								
 			}
 			if (tarefa_atual == 2)
 			{
 				int t2_hrs = hrs;
 				int t2_min = min;
+				int t2_porcen = 5;
 				
 				nokia_lcd_clear();
-				nokia_lcd_write_string("T | H | M | P", 1);
+				nokia_lcd_write_string("T | h:min | %", 1);
 				nokia_lcd_set_cursor(0, 10);
 				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
 				nokia_lcd_write_string(snum, 1);
 				nokia_lcd_set_cursor(24, 10);
 				itoa(t2_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
 				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(45, 10);
-				itoa(t2_min, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_set_cursor(30, 10);
+				nokia_lcd_write_string(":", 1);
+				nokia_lcd_set_cursor(34, 10);
+				exibe_com_2digitos(t2_min);
 				nokia_lcd_set_cursor(69, 10);
-				nokia_lcd_write_string("50", 1);
+				exibe_com_2digitos(t2_porcen);
 				nokia_lcd_render();
-				_delay_ms(5000);
+				_delay_ms(4000);
 				
 			}
 			if (tarefa_atual == 3)
 			{
 				int t3_hrs = hrs;
 				int t3_min = min;
+				int t3_porcen = 15;
 				
 				nokia_lcd_clear();
-				nokia_lcd_write_string("T | H | M | P", 1);
+				nokia_lcd_write_string("T | h:min | %", 1);
 				nokia_lcd_set_cursor(0, 10);
 				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
 				nokia_lcd_write_string(snum, 1);
 				nokia_lcd_set_cursor(24, 10);
 				itoa(t3_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
 				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(45, 10);
-				itoa(t3_min, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
+				nokia_lcd_set_cursor(30, 10);
+				nokia_lcd_write_string(":", 1);
+				nokia_lcd_set_cursor(34, 10);
+				exibe_com_2digitos(t3_min);
 				nokia_lcd_set_cursor(69, 10);
-				nokia_lcd_write_string("17", 1);
+				exibe_com_2digitos(t3_porcen);
 				nokia_lcd_render();
-				_delay_ms(5000);
+				_delay_ms(4000);
 				
 			}
 			
@@ -256,21 +266,43 @@ ISR(USART_RX_vect)
 	tarefas = UDR0 - 48; // UDR0 contém o dado recebido via USART
 	tarefa_atual = 1; // Inicializa as atividades pela tarefa 1
 	
-	nokia_lcd_clear();
-	nokia_lcd_write_string("--------------", 1);
-	nokia_lcd_set_cursor(0, 10);
-	nokia_lcd_write_string("   Total de", 1);
-	itoa(tarefas, snum, 10); // Funçaõ que converte tarefas (int) em string
-	nokia_lcd_set_cursor(35, 20);
-	nokia_lcd_write_string(snum, 1);
-	nokia_lcd_set_cursor(0, 30);
-	nokia_lcd_write_string("   Tarefas", 1);
-	nokia_lcd_set_cursor(0, 40);
-	nokia_lcd_write_string("--------------", 1);
-	nokia_lcd_render();
+	if (tarefas <= 50)
+	{
+		nokia_lcd_clear();
+		nokia_lcd_write_string("--------------", 1);
+		nokia_lcd_set_cursor(0, 10);
+		nokia_lcd_write_string("   Total de", 1);
+		itoa(tarefas, snum, 10); // Funçaõ que converte tarefas (int) em string
+		nokia_lcd_set_cursor(35, 20);
+		nokia_lcd_write_string(snum, 1);
+		nokia_lcd_set_cursor(0, 30);
+		nokia_lcd_write_string("   Tarefas", 1);
+		nokia_lcd_set_cursor(0, 40);
+		nokia_lcd_write_string("--------------", 1);
+		nokia_lcd_render();
+		
+		USART_Transmit(tarefas); // Chamada para função de envio de um frame de 5 a 8 bits
+	}
+	else 
+	{
+		nokia_lcd_clear();
+		nokia_lcd_write_string("--------------", 1);
+		nokia_lcd_set_cursor(14, 10);
+		nokia_lcd_write_string("Invalido!!", 1);
+		itoa(tarefas, snum, 10); // Funçaõ que converte tarefas (int) em string
+		nokia_lcd_set_cursor(21, 20);
+		nokia_lcd_write_string("Digite", 1);
+		nokia_lcd_set_cursor(7, 30);
+		nokia_lcd_write_string("novamente...", 1);
+		nokia_lcd_set_cursor(0, 40);
+		nokia_lcd_write_string("--------------", 1);
+		nokia_lcd_render();
+	}
 	
-	USART_Transmit(tarefas); // Chamada para função de envio de um frame de 5 a 8 bits
 }
+
+
+// ** Módulo funções LED ** //
 
 // Função que seleciona a saída do DEMUX
 void seleciona_saida_demux()
@@ -327,10 +359,9 @@ void seleciona_saida_demux()
 			PORTD |= 0b00000011; // S1 = PD0 = 1 | S2 = PD1 = 1
 		
 			// PORTC |= 0b0100000; // Aciona o sexto LED (PC5)
-						
-			// Salvar hrs e min da tarefa atual nos arrays vetor_hrs[] e vetor_min[]
-			vetor_hrs[contador_tarefa] = hrs - vetor_hrs[contador_tarefa - 1];
-			vetor_min[contador_tarefa] = min - vetor_min[contador_tarefa - 1];
+			
+			calcula_tempo_da_tarefa(); // Chamada da função que calcula o tempo em que cada tarefa foi realizada
+			calcula_porcentagem(); // Chamada da função que calcula a porcentagem do tempo total gasto em cada tarefa
 			
 			int contador = 0; // Contador dos vetores vetor_hrs[] e vetor_min[]
 			
@@ -374,12 +405,8 @@ void define_porcentagem_PWM()
 	}
 }
 
-// Função para calcular a porcentagem do tempo total gasto em cada tarefa
-void calcula_porcentagem()
-{
-	int total_minutos = (vetor_hrs[contador_tarefa] * 60) + vetor_min[contador_tarefa]; // Total de minutos utilizados para realizar a tarefa atual
-	vetor_porcentagem[contador_tarefa] = (total_minutos * 100) / 360; // Regra de 3 para definir a porcentagem de tempo gasto em cada tarefa, tendo que 6h = 100%
-}
+
+// ** Módulo funções USART ** //
 
 // Função para inicialização da USART
 void USART_Init(unsigned int ubrr)
@@ -405,6 +432,7 @@ unsigned char USART_Receive(void)
 	while(!(UCSR0A & (1<<RXC0))); // Espera o dado ser recebido
 	return UDR0; // Lê o dado recebido e retorna
 }
+
 
 int main(void)
 {
@@ -464,6 +492,9 @@ int main(void)
 	{
 	}
 }
+
+
+// ** Módulo funções para calcular e exibir ** //
 
 // Função para atualização do display PCD8544-7
 void atualizaDisplay(char entrada){
@@ -527,7 +558,7 @@ void atualizaDisplay(char entrada){
 	else if (entrada == 'x') // Mensagem: Dados coletados durante as atividades
 	{
 		nokia_lcd_clear();
-		nokia_lcd_write_string("T | H | M | P", 1);
+		nokia_lcd_write_string("T | h:min | %", 1);
 		nokia_lcd_render();
 		
 		int tarefa = 1; // Contador das tarefas
@@ -535,8 +566,6 @@ void atualizaDisplay(char entrada){
 		int leitura_hrs; 
 		int leitura_min;
 		int leitura_porcentagem;
-		//int leitura_hrs[100];
-		//int leitura_min[100];
 		
 		// Ler informações da memória EEPROM
 		for (int iendereco = 0; iendereco <= 3 * contador_tarefa; iendereco += 3){
@@ -550,12 +579,12 @@ void atualizaDisplay(char entrada){
 			nokia_lcd_set_cursor(24, cursor);
 			itoa(leitura_hrs, snum, 10); // Funçaõ que converte leitura_hrs (int) em string (snum)
 			nokia_lcd_write_string(snum, 1);
-			nokia_lcd_set_cursor(45, cursor);
-			itoa(leitura_min, snum, 10); // Funçaõ que converte leitura_min (int) em string (snum)
-			nokia_lcd_write_string(snum, 1);
+			nokia_lcd_set_cursor(30, 10);
+			nokia_lcd_write_string(":", 1);
+			nokia_lcd_set_cursor(34, cursor);
+			exibe_com_2digitos(leitura_min); // Chamada da função para exibir leitura_min sempre com 2 dígitos
 			nokia_lcd_set_cursor(69, cursor);
-			itoa(leitura_porcentagem, snum, 10); // Funçaõ que converte leitura_min (int) em string (snum)
-			nokia_lcd_write_string(snum, 1);
+			exibe_com_2digitos(leitura_porcentagem); // Chamada da função para exibir leitura_porcentagem sempre com 2 dígitos
 			nokia_lcd_render();
 			
 			tarefa++;
@@ -563,6 +592,8 @@ void atualizaDisplay(char entrada){
 			
 			if (cursor == 50)
 			{
+				nokia_lcd_clear();
+				nokia_lcd_write_string("T | h:min | %", 1);
 				_delay_ms(5000);
 				cursor = 10;
 			}
@@ -582,5 +613,51 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_set_cursor(0, 40);
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
+	}
+}
+
+// Função que testa se tem um número tem casa decimal e concatena com "0" caso não tenha
+void exibe_com_2digitos(int numero)
+{
+	if (numero < 10) // Caso o numero só tenha 1 dígito
+	{
+		char zero[] = "0"; // O "0" deve ser colocado na casa decimal
+		itoa(numero, snum, 10); // Funçaõ que converte tarefas (int) em string
+		strcat(zero, snum); // Concatenação de zero e snum
+		nokia_lcd_write_string(zero, 1);
+	}
+	else
+	{
+		itoa(numero, snum, 10); // Funçaõ que converte tarefas (int) em string
+		nokia_lcd_write_string(snum, 1);
+	}
+}
+
+// Função para calcular a porcentagem do tempo total gasto em cada tarefa
+void calcula_porcentagem()
+{
+	int total_minutos = (vetor_hrs[contador_tarefa] * 60) + vetor_min[contador_tarefa]; // Total de minutos utilizados para realizar a tarefa atual
+	vetor_porcentagem[contador_tarefa] = (total_minutos * 100) / 360; // Regra de 3 para definir a porcentagem de tempo gasto em cada tarefa, tendo que 6h = 100%
+}
+
+// Função que calcula o tempo em que cada tarefa foi realizada
+void calcula_tempo_da_tarefa()
+{
+	int teste = hrs - vetor_hrs[contador_tarefa - 1]; // Variável para testar se a atividade anterior e a atual ocorreram na mesma hora
+	if (teste == 0)
+	{
+		// Faz as subtrações dos valores de hrs e min atuais pelo valores referentes ao fim da última tarefa
+		vetor_hrs[contador_tarefa] = hrs - vetor_hrs[contador_tarefa - 1];
+		vetor_min[contador_tarefa] = min - vetor_min[contador_tarefa - 1];
+	}
+	else
+	{
+		int min_abs_totais = (hrs * 60) + min; // Total de minutos desde o início do Timer
+		int min_abs_tarefa_anterior = (vetor_hrs[contador_tarefa - 1] * 60) + vetor_min[contador_tarefa - 1]; // Minutos absolutos da última tarefa
+		int min_abs_tarefa_atual = min_abs_totais - min_abs_tarefa_anterior; // Minutos absolutos da tarefa atual
+		
+		// Salvar hrs e min da tarefa atual nos arrays vetor_hrs[] e vetor_min[]
+		vetor_hrs[contador_tarefa] = min_abs_tarefa_atual / 60;
+		vetor_min[contador_tarefa] = min_abs_tarefa_atual % 60;
 	}
 }
