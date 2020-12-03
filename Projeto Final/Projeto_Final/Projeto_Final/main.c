@@ -31,7 +31,7 @@ int8_t vetor_porcentagem[100];
 int8_t contador_tarefa = 0;
 
 
-// ** Módulo Interrupções ** //
+// ** Funções Interrupções ** //
 
 // Interrupção externa 0, captura o Ligar/Desligar
 ISR(INT0_vect)
@@ -47,7 +47,9 @@ ISR(INT0_vect)
 		}
 		else if (finaliza == 1)
 		{
-			atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
+			finaliza = 0;
+			contador_tarefa++; // Incrementa contador_tarefa
+			atualizaDisplay(tarefa_atual); // Chamada de função - Mensagem: Atividade atual em andamento
 		}
 		else if (pausa == 1)
 		{
@@ -77,6 +79,11 @@ ISR(INT1_vect)
 			pausa = 1; // Pausa o Timer
 		}
 	}
+	else if (finaliza == 1)
+	{		
+		atualizaDisplay('t'); // Chamada de função - Mensagem: Deseja realizar novas tarefas?
+		liga = 1;
+	}
 }
 
 // Interrupção 0 por mudança de pino, captura o Finalizar Tarefa
@@ -88,36 +95,13 @@ ISR(PCINT0_vect)
 		
 		if (tarefa_atual == tarefas) // Não há mais tarefas para realizar
 		{	
-			if (tarefa_atual == 4)
-			{
-				int t4_hrs = hrs;
-				int t4_min = min;
-				int t4_porcen = 25;
+			atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual	
 				
-				nokia_lcd_clear();
-				nokia_lcd_write_string("T | h:min | %", 1);
-				nokia_lcd_set_cursor(0, 10);
-				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(24, 10);
-				itoa(t4_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(30, 10);
-				nokia_lcd_write_string(":", 1);
-				nokia_lcd_set_cursor(34, 10);
-				exibe_com_2digitos(t4_min);
-				nokia_lcd_set_cursor(69, 10);
-				exibe_com_2digitos(t4_porcen);
-				nokia_lcd_render();
-				_delay_ms(4000);
-				
-			}
-					
 			calcula_tempo_da_tarefa(); // Chamada da função que calcula o tempo em que cada tarefa foi realizada
 			calcula_porcentagem(); // Chamada da função que calcula a porcentagem do tempo total gasto em cada tarefa
 			
 			int contador = 0; // Contador dos vetores vetor_hrs[] e vetor_min[]
-			
+		
 			// Salvar os arrays vetor_hrs[], vetor_min[] e vetor_porcentagem[] na EEPROM
 			for (int iendereco = 0; iendereco <= 3 * contador_tarefa; iendereco += 3){
 				_EEPUT(iendereco, vetor_hrs[contador]); // Gravando o conteúdo de vetor_hrs[contador] no endereço iendereco da EEPROM
@@ -125,86 +109,12 @@ ISR(PCINT0_vect)
 				_EEPUT(iendereco + 2, vetor_porcentagem[contador]); // Gravando o conteúdo de vetor_porcentagem[contador] no endereço (iendereco + 2) da EEPROM
 				contador++; // Incrementa o contador
 			}
-			
-			atualizaDisplay('f'); // Chamada de função - Mensagem: Finalizando tarefa atual
+	
 			atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
 			finaliza = 1; // Finaliza contagem do Timer
 		}
 		else
 		{
-			if (tarefa_atual == 1)
-			{
-				int t1_hrs = hrs;
-				int t1_min = min;
-				int t1_porcen = 5;				
-				
-				nokia_lcd_clear();
-				nokia_lcd_write_string("T | h:min | %", 1);
-				nokia_lcd_set_cursor(0, 10);
-				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(24, 10);
-				itoa(t1_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(30, 10);
-				nokia_lcd_write_string(":", 1);
-				nokia_lcd_set_cursor(34, 10);
-				exibe_com_2digitos(t1_min);
-				nokia_lcd_set_cursor(69, 10);
-				exibe_com_2digitos(t1_porcen);
-				nokia_lcd_render();
-				_delay_ms(4000);
-								
-			}
-			if (tarefa_atual == 2)
-			{
-				int t2_hrs = hrs;
-				int t2_min = min;
-				int t2_porcen = 5;
-				
-				nokia_lcd_clear();
-				nokia_lcd_write_string("T | h:min | %", 1);
-				nokia_lcd_set_cursor(0, 10);
-				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(24, 10);
-				itoa(t2_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(30, 10);
-				nokia_lcd_write_string(":", 1);
-				nokia_lcd_set_cursor(34, 10);
-				exibe_com_2digitos(t2_min);
-				nokia_lcd_set_cursor(69, 10);
-				exibe_com_2digitos(t2_porcen);
-				nokia_lcd_render();
-				_delay_ms(4000);
-				
-			}
-			if (tarefa_atual == 3)
-			{
-				int t3_hrs = hrs;
-				int t3_min = min;
-				int t3_porcen = 15;
-				
-				nokia_lcd_clear();
-				nokia_lcd_write_string("T | h:min | %", 1);
-				nokia_lcd_set_cursor(0, 10);
-				itoa(tarefa_atual, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(24, 10);
-				itoa(t3_hrs, snum, 10); // Funçaõ que converte tarefas (int) em string
-				nokia_lcd_write_string(snum, 1);
-				nokia_lcd_set_cursor(30, 10);
-				nokia_lcd_write_string(":", 1);
-				nokia_lcd_set_cursor(34, 10);
-				exibe_com_2digitos(t3_min);
-				nokia_lcd_set_cursor(69, 10);
-				exibe_com_2digitos(t3_porcen);
-				nokia_lcd_render();
-				_delay_ms(4000);
-				
-			}
-			
 			// Salvar hrs e min da tarefa atual nos arrays vetor_hrs[] e vetor_min[]
 			if (tarefa_atual == 1)
 			{
@@ -235,7 +145,7 @@ ISR(TIMER2_COMPA_vect)
 {
 	if (pausa != 1 && finaliza != 1 && liga != 1) // Incrementa o timer se as flags: pausa = 0; finaliza = 0; e liga = 0;
 	{
-		mili += 100; // Incrementa os milissegundos
+		mili++; // Incrementa os milissegundos
 		
 		if (mili >= 1000)
 		{
@@ -266,7 +176,11 @@ ISR(USART_RX_vect)
 	tarefas = UDR0 - 48; // UDR0 contém o dado recebido via USART
 	tarefa_atual = 1; // Inicializa as atividades pela tarefa 1
 	
-	if (tarefas <= 50)
+	if (tarefas == 0)
+	{
+		atualizaDisplay('x'); // Chamada de função - Mensagem: Dados coletados durante as atividades
+	}
+	else if (tarefas <= 9)
 	{
 		nokia_lcd_clear();
 		nokia_lcd_write_string("--------------", 1);
@@ -298,11 +212,10 @@ ISR(USART_RX_vect)
 		nokia_lcd_write_string("--------------", 1);
 		nokia_lcd_render();
 	}
-	
 }
 
 
-// ** Módulo funções LED ** //
+// ** Funções LED ** //
 
 // Função que seleciona a saída do DEMUX
 void seleciona_saida_demux()
@@ -318,47 +231,35 @@ void seleciona_saida_demux()
 			// Seleciona a saída do DEMUX: 01
 			PORTC |= 0b1000000; // S0 = PC6 = 1
 			PORTD &= 0b11111100; // S1 = PD0 = 0 | S2 = PD1 = 0
-		
-			// PORTC |= 0b0000001; // Aciona o primeiro LED (PC0)
 			break;
 		case 2:
 			// Seleciona a saída do DEMUX: 02
 			PORTC &= 0b0111111; // S0 = PC6 = 0
 			PORTD |= 0b00000001;  // S1 = PD0 = 1
 			PORTD &= 0b11111101; // S2 = PD1 = 0
-		
-			// PORTC |= 0b0000010; // Aciona o segundo LED (PC1)
 			break;
 		case 3:
 			// Seleciona a saída do DEMUX: 03
 			PORTC |= 0b1000000; // S0 = PC6 = 1
 			PORTD |= 0b00000001; // S1 = PD0 = 1
 			PORTD &= 0b11111101; // S2 = PD1 = 0
-		
-			// PORTC |= 0b0000100; // Aciona o terceiro LED (PC2)
 			break;
 		case 4:
 			// Seleciona a saída do DEMUX: 04
 			PORTC &= 0b0111111; // S0 = PC6 = 0
 			PORTD &= 0b11111110; // S1 = PD0 = 0
 			PORTD |= 0b00000010; // S2 = PD1 = 1
-		
-			// PORTC |= 0b0001000; // Aciona o quarto LED (PC3)
 			break;
 		case 5:
 			// Seleciona a saída do DEMUX: 05
 			PORTC |= 0b1000000; // S0 = PC6 = 1
 			PORTD &= 0b11111110; // S1 = PD0 = 0
 			PORTD |= 0b00000010; // S2 = PD1 = 1
-		
-			// PORTC |= 0b0010000; // Aciona o quinto LED (PC4)
 			break;
 		case 6:
 			// Seleciona a saída do DEMUX: 06
 			PORTC &= 0b0111111; // S0 = PC6 = 0
 			PORTD |= 0b00000011; // S1 = PD0 = 1 | S2 = PD1 = 1
-		
-			// PORTC |= 0b0100000; // Aciona o sexto LED (PC5)
 			
 			calcula_tempo_da_tarefa(); // Chamada da função que calcula o tempo em que cada tarefa foi realizada
 			calcula_porcentagem(); // Chamada da função que calcula a porcentagem do tempo total gasto em cada tarefa
@@ -406,7 +307,7 @@ void define_porcentagem_PWM()
 }
 
 
-// ** Módulo funções USART ** //
+// ** Funções USART ** //
 
 // Função para inicialização da USART
 void USART_Init(unsigned int ubrr)
@@ -434,67 +335,7 @@ unsigned char USART_Receive(void)
 }
 
 
-int main(void)
-{
-	DDRB = 0b11111110; // Define todos os pinos da porta B como saída (exceto B0)
-	PORTB = 0b00000001; // Habilita pull-up do pino PB0
-	DDRD = 0b11110011; // Define os pinos da porta D: D0-D3 como entradas; D4-D7 como saída
-	PORTD = 0b00001100; // Habilita pull-ups dos pinos PD2 e PD3
-	
-	// Variáveis inicializadas
-	mili = 0;
-	seg = 0;
-	min = 0;
-	hrs = 0;
-	liga = 1;
-	pausa = 0;
-	finaliza = 0;
-	seleciona_saida_demux(); // Chamada para função que seleciona a saída do DEMUX
-	
-	USART_Init(MYUBRR); // Chamada para função que inicializa a USART
-	
-	// Fast PWM, TOP = 0xFF, OC0A habilitado
-	TCCR0A = 0b10000011; // PWM não invertido no pino OC0A
-	TCCR0B = 0b00000101; // Liga TC0, prescaler = 1024, fpwm = f0sc/(256*prescaler) = 16MHz/(256*1024) = 61Hz
-	OCR0A = 0; // Controle do ciclo ativo do PWM 0C0A
-	
-	// Configuração das Interrupções Externas
-	EICRA = 0b00001010;// Interrupções externas INT0 e INT1 na borda de descida
-	EIMSK = 0b00000011;// Habilita as interrupções externas INT0 e INT1
-	
-	// Configuração da Interrupção 0 por mudança de pino
-	PCICR = 0b00000001; // Enable pin change interrupt 0
-	PCMSK0 = 0b00000001; // Pin change enable mask 0
-	
-	// ** Conferir comentários do Timer **
-	// Configuração dos Timers
-	TCCR2A = 0b00000010; // Habilita modo CTC do TC0
-	TCCR2B = 0b00000011; // Liga TC0 com prescaler = 64
-	OCR2A = 249;		 // Ajusta o comparador para o TC0 contar até 249
-	TIMSK2 = 0b00000010; // Habilita a interrupção na igualdade de comparação com OCR0A. A interrupção ocorre a cada 1ms = (64*(249+1))/16MHz
-	
-	sei(); // Habilita interrupções globais, ativando o bit I do SREG
-	
-	nokia_lcd_init(); // Inicializa o LCD
-	nokia_lcd_clear();  // Limpa o display
-	nokia_lcd_write_string("--------------", 1);  // Informação que será exibida no display e tamanho da fonte
-	nokia_lcd_set_cursor(0, 10); // Move o cursor
-	nokia_lcd_write_string("Digite quantas", 1);
-	nokia_lcd_set_cursor(0, 20);
-	nokia_lcd_write_string(" tarefas vai", 1);
-	nokia_lcd_set_cursor(0, 30);
-	nokia_lcd_write_string("   realizar", 1);
-	nokia_lcd_set_cursor(0, 40);
-	nokia_lcd_write_string("--------------", 1);
-	nokia_lcd_render(); // Exibe as informações apresentadas acima no display
-	
-	while (1)
-	{
-	}
-}
-
-
-// ** Módulo funções para calcular e exibir ** //
+// ** Funções para calcular e exibir ** //
 
 // Função para atualização do display PCD8544-7
 void atualizaDisplay(char entrada){
@@ -544,6 +385,20 @@ void atualizaDisplay(char entrada){
 		
 		_delay_ms(1000);
 	}
+	else if (entrada == 't') // Mensagem: Deseja realizar novas tarefas?
+	{
+		nokia_lcd_clear();
+		nokia_lcd_write_string("--------------", 1);
+		nokia_lcd_set_cursor(25, 10);
+		nokia_lcd_write_string("Deseja", 1);
+		nokia_lcd_set_cursor(5, 20);
+		nokia_lcd_write_string("mais quantas", 1);
+		nokia_lcd_set_cursor(22, 30);
+		nokia_lcd_write_string("tarefas?", 1);
+		nokia_lcd_set_cursor(0, 40);
+		nokia_lcd_write_string("--------------", 1);
+		nokia_lcd_render();
+	}
 	else if (entrada == 'p') // Mensagem: Pausando o programa
 	{
 		nokia_lcd_clear();
@@ -562,8 +417,8 @@ void atualizaDisplay(char entrada){
 		nokia_lcd_render();
 		
 		int tarefa = 1; // Contador das tarefas
-		int cursor = 10; // Contador do cursor 
-		int leitura_hrs; 
+		int cursor = 10; // Contador do cursor
+		int leitura_hrs;
 		int leitura_min;
 		int leitura_porcentagem;
 		
@@ -579,9 +434,9 @@ void atualizaDisplay(char entrada){
 			nokia_lcd_set_cursor(24, cursor);
 			itoa(leitura_hrs, snum, 10); // Funçaõ que converte leitura_hrs (int) em string (snum)
 			nokia_lcd_write_string(snum, 1);
-			nokia_lcd_set_cursor(30, 10);
+			nokia_lcd_set_cursor(30, cursor);
 			nokia_lcd_write_string(":", 1);
-			nokia_lcd_set_cursor(34, cursor);
+			nokia_lcd_set_cursor(36, cursor);
 			exibe_com_2digitos(leitura_min); // Chamada da função para exibir leitura_min sempre com 2 dígitos
 			nokia_lcd_set_cursor(69, cursor);
 			exibe_com_2digitos(leitura_porcentagem); // Chamada da função para exibir leitura_porcentagem sempre com 2 dígitos
@@ -652,12 +507,71 @@ void calcula_tempo_da_tarefa()
 	}
 	else
 	{
-		int min_abs_totais = (hrs * 60) + min; // Total de minutos desde o início do Timer
-		int min_abs_tarefa_anterior = (vetor_hrs[contador_tarefa - 1] * 60) + vetor_min[contador_tarefa - 1]; // Minutos absolutos da última tarefa
-		int min_abs_tarefa_atual = min_abs_totais - min_abs_tarefa_anterior; // Minutos absolutos da tarefa atual
+		uint16_t min_abs_totais = (hrs * 60) + min; // Total de minutos desde o início do Timer
+		uint16_t min_abs_tarefa_anterior = (vetor_hrs[contador_tarefa - 1] * 60) + vetor_min[contador_tarefa - 1]; // Minutos absolutos da última tarefa
+		uint16_t min_abs_tarefa_atual = min_abs_totais - min_abs_tarefa_anterior; // Minutos absolutos da tarefa atual
 		
 		// Salvar hrs e min da tarefa atual nos arrays vetor_hrs[] e vetor_min[]
 		vetor_hrs[contador_tarefa] = min_abs_tarefa_atual / 60;
 		vetor_min[contador_tarefa] = min_abs_tarefa_atual % 60;
+	}
+}
+
+
+int main(void)
+{
+	DDRB = 0b11111110; // Define todos os pinos da porta B como saída (exceto B0)
+	PORTB = 0b00000001; // Habilita pull-up do pino PB0
+	DDRD = 0b11110011; // Define os pinos da porta D: D0-D3 como entradas; D4-D7 como saída
+	PORTD = 0b00001100; // Habilita pull-ups dos pinos PD2 e PD3
+	
+	// Variáveis inicializadas
+	mili = 0;
+	seg = 0;
+	min = 0;
+	hrs = 0;
+	liga = 1;
+	pausa = 0;
+	finaliza = 0;
+	seleciona_saida_demux(); // Chamada para função que seleciona a saída do DEMUX
+	
+	USART_Init(MYUBRR); // Chamada para função que inicializa a USART
+	
+	// Fast PWM, TOP = 0xFF, OC0A habilitado
+	TCCR0A = 0b10000011; // PWM não invertido no pino OC0A
+	TCCR0B = 0b00000101; // Liga TC0, prescaler = 1024, fpwm = f0sc/(256*prescaler) = 16MHz/(256*1024) = 61Hz
+	OCR0A = 0; // Controle do ciclo ativo do PWM 0C0A
+	
+	// Configuração das Interrupções Externas
+	EICRA = 0b00001010;// Interrupções externas INT0 e INT1 na borda de descida
+	EIMSK = 0b00000011;// Habilita as interrupções externas INT0 e INT1
+	
+	// Configuração da Interrupção 0 por mudança de pino
+	PCICR = 0b00000001; // Enable pin change interrupt 0
+	PCMSK0 = 0b00000001; // Pin change enable mask 0
+	
+	// Configuração dos Timers
+	TCCR2A = 0b00000010; // Habilita modo CTC do TC2
+	TCCR2B = 0b00000011; // Liga TC2 com prescaler = 64
+	OCR2A = 249;		 // Ajusta o comparador para o TC2 contar até 249
+	TIMSK2 = 0b00000010; // Habilita a interrupção na igualdade de comparação com OCR2A. A interrupção ocorre a cada 1ms = (64*(249+1))/16MHz
+	
+	sei(); // Habilita interrupções globais, ativando o bit I do SREG
+	
+	nokia_lcd_init(); // Inicializa o LCD
+	nokia_lcd_clear();  // Limpa o display
+	nokia_lcd_write_string("--------------", 1);  // Informação que será exibida no display e tamanho da fonte
+	nokia_lcd_set_cursor(0, 10); // Move o cursor
+	nokia_lcd_write_string("Digite quantas", 1);
+	nokia_lcd_set_cursor(0, 20);
+	nokia_lcd_write_string(" tarefas vai", 1);
+	nokia_lcd_set_cursor(0, 30);
+	nokia_lcd_write_string("   realizar", 1);
+	nokia_lcd_set_cursor(0, 40);
+	nokia_lcd_write_string("--------------", 1);
+	nokia_lcd_render(); // Exibe as informações apresentadas acima no display
+	
+	while (1)
+	{
 	}
 }
